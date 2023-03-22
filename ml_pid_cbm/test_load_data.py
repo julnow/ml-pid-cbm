@@ -40,6 +40,12 @@ class TestLoadData(unittest.TestCase):
             LoadData.create_cut_string(0.141, 13, "test_cut"), expected_string
         )
 
+    def test_load_var_name(self):
+        json_data = """{"var_names":{"momentum": "Complex_p","charge": "Complex_q"}}"""
+        # mocking json file for testing
+        with patch("builtins.open", mock_open(read_data=json_data)):
+            self.assertEqual(self.loader_pos.load_var_name("test.json", "momentum"), "Complex_p")
+
     def test_load_quality_cuts(self):
         json_data = """{"cuts":{"Complex_mass2": {"lower": -1.0,"upper": 2.0},"Complex_pT": {"lower": 0.0,"upper": 2.0}}}"""
         # mocking json file for testing
@@ -63,7 +69,8 @@ class TestLoadData(unittest.TestCase):
             incorrect_type_entry,
         ]
         # mock json file for testing
-        json_data = """{"cuts":{"Complex_p": {"lower": 0,"upper": 3.0},"Complex_eta": {"lower": 0.0,"upper": 6.0}}}"""
+        json_data = """{"var_names":{"momentum": "Complex_p","charge": "Complex_q"},
+        "cuts":{"Complex_p": {"lower": 0,"upper": 3.0},"Complex_eta": {"lower": 0.0,"upper": 6.0}}}"""
         tree_handler = TreeHandler()
         tree_handler.set_data_frame(pd.DataFrame(complete_data))
         with patch("builtins.open", mock_open(read_data=json_data)):

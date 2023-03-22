@@ -1,4 +1,8 @@
 {
+    "var_names":{
+      "momentum": "Complex_p",
+      "charge": "Complex_q"
+    },
     "cuts": {
       "Complex_mass2": {
         "lower": -1.0,
@@ -18,3 +22,4 @@
       }
     }
   }
+  
