@@ -1,3 +1,7 @@
+"""
+Module for loading data saved in .tree format into hipe4ml.TreeHandler
+"""
+
 import json
 from hipe4ml.tree_handler import TreeHandler
 
