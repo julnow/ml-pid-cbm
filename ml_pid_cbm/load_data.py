@@ -1,15 +1,18 @@
 """
-Module for loading data saved in .tree format into hipe4ml.TreeHandler
+Module for loading data saved in .tree format into hipe4ml.TreeHandler,
+data cleaning and preparing training and test dataset.
 """
 
 import json
+from typing import Tuple
 from hipe4ml.tree_handler import TreeHandler
+from particles_id import ParticlesId as Pid
 
 
 class LoadData:
     """
-    Class for loading data stored in .tree format into hipe4ml.TreeHandler
-    for training and testing ml model
+    Class for loading data stored in .tree format into hipe4ml.TreeHandler,
+    data cleaning and preparing dataset for training and testing of the ML model
     """
 
     def __init__(
@@ -25,6 +28,82 @@ class LoadData:
         self.upper_p_cut = upper_p_cut
         self.anti_particles = anti_particles
         self.json_file_name = json_file_name
+
+    def get_proton_kaons_pions(
+        self,
+        tree_handler: TreeHandler,
+        anti_particles: bool,
+        nsigma: int = 3,
+        nsigma_proton: int = None,
+        nsigma_kaon: int = None,
+        nsigma_pion: int = None,
+    ) -> Tuple[TreeHandler, TreeHandler, TreeHandler]:
+        """Gets protons, kaons, and pions from TreeHandler in  nsigma region.
+        In this tof model, pions, muons and electrons are treated the same
+
+        Args:
+            tree_handler (TreeHandler): _description_
+            anti_particles (bool): _description_
+
+        Returns:
+            Tuple[TreeHandler, TreeHandler, TreeHandler]: Tuple of protons, kaons, and pions for training
+        """
+        # if not defined get default value of nsigma
+        nsigma_proton = nsigma_proton or nsigma
+        nsigma_kaon = nsigma_kaon or nsigma
+        nsigma_pion = nsigma_pion or nsigma
+
+        if anti_particles is False:
+            protons = self.get_particles_type(
+                tree_handler, Pid.PROTON.value, nsigma_proton
+            )
+            kaons = self.get_particles_type(
+                tree_handler, Pid.POS_KAON.value, nsigma_kaon
+            )
+            pions = self.get_particles_type(
+                tree_handler,
+                #pions, muons and electrons impossible to ditinguish in this model
+                [Pid.POS_PION.value, Pid.POS_MUON.value, Pid.POSITRON.value],
+                nsigma_pion,
+            )
+        elif anti_particles is True:
+            protons = self.get_particles_type(
+                tree_handler, Pid.ANTI_PROTON.value, nsigma_proton
+            )
+            kaons = self.get_particles_type(tree_handler, Pid.NEG_KAON.value, kaons)
+            pions = self.get_particles_type(
+                tree_handler,
+                [Pid.NEG_PION.value, Pid.NEG_MUON.value, Pid.ELECTRON.value],
+                nsigma_pion,
+            )
+        return (protons, kaons, pions)
+
+    def get_particles_type(
+        self, tree_handler: TreeHandler, pid: float, nsigma: float = 0.0
+    ) -> TreeHandler:
+        """Gets particle of given pid in selected sigma region of mass2
+
+        Args:
+            tree_handler (TreeHandler): TreeHandler with the data
+            pid (float): Pid of given particle type
+            nsigma (float, optional): Number of sigma to select sigma region of mass2. Defaults to 0.
+
+        Returns:
+            TreeHandler: TreeHandler with given particles type in given sigma region
+        """
+        pid_var_name = self.__class__.load_var_name(self.json_file_name, "pid")
+        mass2_var_name = self.__class__.load_var_name(self.json_file_name, "mass2")
+        particles = tree_handler.get_subset(f"{pid_var_name} == {pid}")
+        # getting selected nsigma region in the mass2
+        if nsigma > 0:
+            mass2_column = particles.get_data_frame()[mass2_var_name]
+            mean = mass2_column.mean()
+            std = mass2_column.std()
+            mass2_cut = LoadData.create_cut_string(
+                mean - nsigma * std, mean + nsigma * std, mass2_var_name
+            )
+            particles = particles.get_subset(mass2_cut)
+        return particles
 
     # load file with data into hipe4ml TreeHandler
     def load_tree(

@@ -1,25 +1,26 @@
 {
-    "var_names":{
-      "momentum": "Complex_p",
-      "charge": "Complex_q"
+  "var_names": {
+    "momentum": "Complex_p",
+    "charge": "Complex_q",
+    "mass2": "Complex_mass2",
+    "pid": "Complex_pid"
+  },
+  "cuts": {
+    "Complex_mass2": {
+      "lower": -1.0,
+      "upper": 2.0
     },
-    "cuts": {
-      "Complex_mass2": {
-        "lower": -1.0,
-        "upper": 2.0
-      },
-      "Complex_pT": {
-        "lower": 0.0,
-        "upper": 2.0
-      },
-      "Complex_p": {
-        "lower": -12.0,
-        "upper": 12.0
-      },
-      "Complex_eta": {
-        "lower": 0.0,
-        "upper": 6.0
-      }
+    "Complex_pT": {
+      "lower": 0.0,
+      "upper": 2.0
+    },
+    "Complex_p": {
+      "lower": -12.0,
+      "upper": 12.0
+    },
+    "Complex_eta": {
+      "lower": 0.0,
+      "upper": 6.0
     }
   }
-  
+}
