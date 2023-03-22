@@ -33,10 +33,10 @@ class LoadData:
         self,
         tree_handler: TreeHandler,
         anti_particles: bool,
-        nsigma: int = 3,
-        nsigma_proton: int = None,
-        nsigma_kaon: int = None,
-        nsigma_pion: int = None,
+        nsigma: float = 3,
+        nsigma_proton: float = None,
+        nsigma_kaon: float = None,
+        nsigma_pion: float = None,
     ) -> Tuple[TreeHandler, TreeHandler, TreeHandler]:
         """Gets protons, kaons, and pions from TreeHandler in  nsigma region.
         In this tof model, pions, muons and electrons are treated the same
