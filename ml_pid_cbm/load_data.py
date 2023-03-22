@@ -64,13 +64,17 @@ class LoadData:
         if json_file_name is None:
             json_file_name = self.json_file_name
         quality_cuts = self.load_quality_cuts(json_file_name)
-        momemntum_variable_name = self.__class__.load_var_name(json_file_name, "momentum")
+        momemntum_variable_name = self.__class__.load_var_name(
+            json_file_name, "momentum"
+        )
         charge_variable_name = self.__class__.load_var_name(json_file_name, "charge")
 
         for cut in quality_cuts:
             tree_handler = tree_handler.get_subset(cut)
         # include specific momentum cut
-        p_cut = self.create_cut_string(self.lower_p_cut, self.upper_p_cut, momemntum_variable_name)
+        p_cut = self.create_cut_string(
+            self.lower_p_cut, self.upper_p_cut, momemntum_variable_name
+        )
         tree_handler = tree_handler.get_subset(p_cut)
         # include sign of charge
         if self.anti_particles is False:
@@ -98,9 +102,18 @@ class LoadData:
             for cut_name, cut_data in cuts.items()
         ]
         return quality_cuts
-    
+
     @staticmethod
     def load_var_name(json_file_name: str, var: str) -> str:
+        """Loads physical variable name used in tree from json file.
+
+        Args:
+            json_file_name (str): Name of the json file with var_names
+            var (str): Physical variable we look for
+
+        Returns:
+            str: Name of physical variable in our tree structure loaded from json file
+        """
         with open(json_file_name, "r") as json_file:
             var_names = json.load(json_file)["var_names"]
         return var_names[var]
