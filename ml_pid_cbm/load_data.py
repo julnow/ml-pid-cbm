@@ -45,8 +45,7 @@ class LoadData:
         Args:
             tree_handler (TreeHandler): TreeHandler containg data.
             nsigma (float, optional): Number of sigma for data cleaning. Defaults to 3.
-            anti_particles (bool, optional): Loads only antiparticles if set to True, positive particle if set to True.
-            Defaults to None.
+            anti_particles (bool, optional): Loads only antiparticles if set to True, positive particle if set to False. Defaults to None.
             nsigma_proton (float, optional): Number of sigma for protons, if not specified uses nsigma. Defaults to None.
             nsigma_kaon (float, optional): Number of sigma for kaons, if not specified uses nsigma. Defaults to None.
             nsigma_pion (float, optional): Number of sigma for pions, if not specified uses nsigma. Defaults to None.
