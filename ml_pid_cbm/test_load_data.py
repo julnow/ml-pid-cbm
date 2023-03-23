@@ -44,7 +44,9 @@ class TestLoadData(unittest.TestCase):
         json_data = """{"var_names":{"momentum": "Complex_p","charge": "Complex_q"}}"""
         # mocking json file for testing
         with patch("builtins.open", mock_open(read_data=json_data)):
-            self.assertEqual(self.loader_pos.load_var_name("test.json", "momentum"), "Complex_p")
+            self.assertEqual(
+                self.loader_pos.load_var_name("test.json", "momentum"), "Complex_p"
+            )
 
     def test_load_quality_cuts(self):
         json_data = """{"cuts":{"Complex_mass2": {"lower": -1.0,"upper": 2.0},"Complex_pT": {"lower": 0.0,"upper": 2.0}}}"""
@@ -74,19 +76,76 @@ class TestLoadData(unittest.TestCase):
         tree_handler = TreeHandler()
         tree_handler.set_data_frame(pd.DataFrame(complete_data))
         with patch("builtins.open", mock_open(read_data=json_data)):
-            # positive particles
+            # only positive particles
             positive_tree_handler = self.loader_pos.clean_tree(tree_handler)
             pd.testing.assert_frame_equal(
                 positive_tree_handler.get_data_frame().reset_index(drop=True),
                 pd.DataFrame([positive_entry]).reset_index(drop=True),
                 check_dtype=False,
             )
-            # negative (anti) particles
+            # only negative (anti) particles
             negative_tree_handler = self.loader_anti.clean_tree(tree_handler)
             pd.testing.assert_frame_equal(
                 negative_tree_handler.get_data_frame().reset_index(drop=True),
                 pd.DataFrame([negative_entry]).reset_index(drop=True),
                 check_dtype=False,
+            )
+
+    def test_get_particles_type(self):
+        proton_entry = {
+            "Complex_q": 1,
+            "Complex_p": 1,
+            "Complex_pid": 2212,
+            "Complex_mass2": 0.8,
+        }
+        proton_entry_specific_p = {
+            "Complex_q": 1,
+            "Complex_p": 2,
+            "Complex_pid": 2212,
+            "Complex_mass2": 0.79,
+        }
+        proton_entry_outside_1sigma = {
+            "Complex_q": 1,
+            "Complex_p": 1,
+            "Complex_pid": 2212,
+            "Complex_mass2": 3.8,
+        }
+        pion_entry = {
+            "Complex_q": 1,
+            "Complex_p": 1.2,
+            "Complex_pid": 211,
+            "Complex_mass2": 0.2,
+        }
+        complete_data = [
+            proton_entry,
+            proton_entry,
+            proton_entry,
+            proton_entry,
+            proton_entry,
+            proton_entry_specific_p,
+            proton_entry_outside_1sigma,
+            pion_entry,
+        ]
+        # mock json file for testing
+        json_data = """{"var_names":{"momentum": "Complex_p","charge": "Complex_q", "mass2": "Complex_mass2", "pid": "Complex_pid"}}"""
+        tree_handler = TreeHandler()
+        tree_handler.set_data_frame(pd.DataFrame(complete_data))
+        with patch("builtins.open", mock_open(read_data=json_data)):
+            protons = self.loader_pos.get_particles_type(tree_handler, 2212, 1).get_data_frame()
+            #should find proton inside 1sigma region
+            self.assertEqual(
+                protons[protons["Complex_mass2"] == proton_entry_specific_p["Complex_mass2"]]["Complex_p"].iloc[0],
+                proton_entry_specific_p["Complex_p"],
+            )
+            #should filter out proton outside 1sigma region
+            pd.testing.assert_frame_equal(
+                protons[protons["Complex_mass2"] == proton_entry_outside_1sigma["Complex_mass2"]],
+                protons.drop(protons.index)
+            )
+            #should filter out pions
+            pd.testing.assert_frame_equal(
+                protons[protons["Complex_mass2"] == pion_entry["Complex_mass2"]],
+                protons.drop(protons.index)
             )
 
     if __name__ == "__main__":

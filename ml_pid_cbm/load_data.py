@@ -62,7 +62,7 @@ class LoadData:
             )
             pions = self.get_particles_type(
                 tree_handler,
-                #pions, muons and electrons impossible to ditinguish in this model
+                # pions, muons and electrons impossible to ditinguish in this model
                 [Pid.POS_PION.value, Pid.POS_MUON.value, Pid.POSITRON.value],
                 nsigma_pion,
             )
@@ -120,8 +120,7 @@ class LoadData:
             TreeHandler: hipe4ml structure contatining tree to train and test model on
         """
 
-        if data_file_name is None:
-            data_file_name = self.data_file_name
+        data_file_name = data_file_name or self.data_file_name
         tree_handler = TreeHandler(data_file_name, tree_type)
 
         return self.clean_tree(tree_handler, self.json_file_name)
