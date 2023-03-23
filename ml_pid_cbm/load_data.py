@@ -32,54 +32,70 @@ class LoadData:
     def get_proton_kaons_pions(
         self,
         tree_handler: TreeHandler,
-        anti_particles: bool,
         nsigma: float = 3,
+        anti_particles: bool = None,
         nsigma_proton: float = None,
         nsigma_kaon: float = None,
         nsigma_pion: float = None,
+        json_file_name: str = None,
     ) -> Tuple[TreeHandler, TreeHandler, TreeHandler]:
         """Gets protons, kaons, and pions from TreeHandler in  nsigma region.
         In this tof model, pions, muons and electrons are treated the same
 
         Args:
-            tree_handler (TreeHandler): _description_
-            anti_particles (bool): _description_
+            tree_handler (TreeHandler): TreeHandler containg data.
+            nsigma (float, optional): Number of sigma for data cleaning. Defaults to 3.
+            anti_particles (bool, optional): Loads only antiparticles if set to True, positive particle if set to True.
+            Defaults to None.
+            nsigma_proton (float, optional): Number of sigma for protons, if not specified uses nsigma. Defaults to None.
+            nsigma_kaon (float, optional): Number of sigma for kaons, if not specified uses nsigma. Defaults to None.
+            nsigma_pion (float, optional): Number of sigma for pions, if not specified uses nsigma. Defaults to None.
+            json_file_name (str, optional): Name of the json file contaning variable names. Defaults to None.
 
         Returns:
-            Tuple[TreeHandler, TreeHandler, TreeHandler]: Tuple of protons, kaons, and pions for training
+            Tuple[TreeHandler, TreeHandler, TreeHandler]: _description_
         """
-        # if not defined get default value of nsigma
+        anti_particles = anti_particles or self.anti_particles
         nsigma_proton = nsigma_proton or nsigma
         nsigma_kaon = nsigma_kaon or nsigma
         nsigma_pion = nsigma_pion or nsigma
+        json_file_name = json_file_name or self.json_file_name
 
         if anti_particles is False:
             protons = self.get_particles_type(
-                tree_handler, Pid.PROTON.value, nsigma_proton
+                tree_handler, Pid.PROTON.value, nsigma_proton, json_file_name
             )
             kaons = self.get_particles_type(
-                tree_handler, Pid.POS_KAON.value, nsigma_kaon
+                tree_handler, Pid.POS_KAON.value, nsigma_kaon, json_file_name
             )
             pions = self.get_particles_type(
                 tree_handler,
                 # pions, muons and electrons impossible to ditinguish in this model
                 [Pid.POS_PION.value, Pid.POS_MUON.value, Pid.POSITRON.value],
                 nsigma_pion,
+                json_file_name,
             )
         elif anti_particles is True:
             protons = self.get_particles_type(
-                tree_handler, Pid.ANTI_PROTON.value, nsigma_proton
+                tree_handler, Pid.ANTI_PROTON.value, nsigma_proton, json_file_name
             )
-            kaons = self.get_particles_type(tree_handler, Pid.NEG_KAON.value, kaons)
+            kaons = self.get_particles_type(
+                tree_handler, Pid.NEG_KAON.value, nsigma_kaon
+            )
             pions = self.get_particles_type(
                 tree_handler,
                 [Pid.NEG_PION.value, Pid.NEG_MUON.value, Pid.ELECTRON.value],
                 nsigma_pion,
+                json_file_name,
             )
         return (protons, kaons, pions)
 
     def get_particles_type(
-        self, tree_handler: TreeHandler, pid: float, nsigma: float = 0.0
+        self,
+        tree_handler: TreeHandler,
+        pid: float,
+        nsigma: float = 0.0,
+        json_file_name: str = None,
     ) -> TreeHandler:
         """Gets particle of given pid in selected sigma region of mass2
 
@@ -87,22 +103,25 @@ class LoadData:
             tree_handler (TreeHandler): TreeHandler with the data
             pid (float): Pid of given particle type
             nsigma (float, optional): Number of sigma to select sigma region of mass2. Defaults to 0.
+            json_file_name (str, optional): Name of the json file contaning variable names. Defaults to None.
 
         Returns:
             TreeHandler: TreeHandler with given particles type in given sigma region
         """
-        pid_var_name = self.__class__.load_var_name(self.json_file_name, "pid")
-        mass2_var_name = self.__class__.load_var_name(self.json_file_name, "mass2")
+        json_file_name = json_file_name or self.json_file_name
+        pid_var_name = self.__class__.load_var_name(json_file_name, "pid")
+        mass2_var_name = self.__class__.load_var_name(json_file_name, "mass2")
         particles = tree_handler.get_subset(f"{pid_var_name} == {pid}")
         # getting selected nsigma region in the mass2
         if nsigma > 0:
             mass2_column = particles.get_data_frame()[mass2_var_name]
             mean = mass2_column.mean()
             std = mass2_column.std()
-            mass2_cut = LoadData.create_cut_string(
-                mean - nsigma * std, mean + nsigma * std, mass2_var_name
-            )
-            particles = particles.get_subset(mass2_cut)
+            if std > 0:
+                mass2_cut = LoadData.create_cut_string(
+                    mean - nsigma * std, mean + nsigma * std, mass2_var_name
+                )
+                particles = particles.get_subset(mass2_cut)
         return particles
 
     # load file with data into hipe4ml TreeHandler
@@ -139,8 +158,7 @@ class LoadData:
         Returns:
             TreeHandler: _description_
         """
-        if json_file_name is None:
-            json_file_name = self.json_file_name
+        json_file_name = json_file_name or self.json_file_name
         quality_cuts = self.load_quality_cuts(json_file_name)
         momemntum_variable_name = self.__class__.load_var_name(
             json_file_name, "momentum"
