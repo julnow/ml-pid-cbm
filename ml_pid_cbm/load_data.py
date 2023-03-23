@@ -4,7 +4,7 @@ data cleaning and preparing training and test dataset.
 """
 
 import json
-from typing import Tuple
+from typing import Tuple, List
 from hipe4ml.tree_handler import TreeHandler
 from particles_id import ParticlesId as Pid
 
@@ -179,7 +179,7 @@ class LoadData:
 
         return tree_handler
 
-    def load_quality_cuts(self, json_file_name: str):  # -> list[str]:
+    def load_quality_cuts(self, json_file_name: str) -> List[str]:
         """Loads quality cuts defined in json file into array of strings
 
         Args:
