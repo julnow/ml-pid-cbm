@@ -3,6 +3,11 @@ This module is used for training our ml model
 """
 import json
 from typing import Dict, List, Tuple
+from pandas import DataFrame
+import xgboost as xgb
+from hipe4ml.analysis_utils import train_test_generator
+from hipe4ml.model_handler import ModelHandler
+from hipe4ml.tree_handler import TreeHandler
 
 
 class TrainModel:
@@ -13,6 +18,67 @@ class TrainModel:
     def __init__(self, json_file_name: str, optimize_hyper_params: bool):
         self.json_file_name = json_file_name
         self.optimize_hyper_params = optimize_hyper_params
+
+    def train_model_handler(self, model_hdl: ModelHandler, train_test_data):
+        model_hdl.train_test_model(train_test_data, multi_class_opt="ovo")
+
+    def prepare_model_handler(
+        self,
+        json_file_name: str = None,
+        train_test_data = None,
+    ) -> ModelHandler:
+        json_file_name = json_file_name or self.json_file_name
+        features_for_train = self.load_features_for_train(json_file_name)
+        if (self.optimize_hyper_params is True and train_test_data is not None):
+            model_clf = xgb.XGBClassifier()
+            model_hdl = ModelHandler(model_clf, features_for_train)
+            hyper_params_ranges = self.load_hyper_params_ranges(json_file_name)
+            study = model_hdl.optimize_params_optuna(
+                train_test_data,
+                hyper_params_ranges,
+                cross_val_scoring="roc_auc_ovo",
+                timeout=120,
+                n_jobs=2,
+                n_trials=2,
+                direction="maximize",
+            )
+        elif (self.optimize_hyper_params is True and train_test_data is None):
+            raise TypeError("train_test_data must be defined to optimize hyper params")
+        elif self.optimize_hyper_params is False:
+            n_estimators, max_depth, learning_rate = self.load_hyper_params_vals(
+                json_file_name
+            )
+            model_clf = xgb.XGBClassifier(
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                learning_rate=learning_rate,
+            )
+            model_hdl = ModelHandler(model_clf, features_for_train)
+        return model_hdl
+
+    def prepare_train_test_data(
+        self,
+        protons_th: TreeHandler,
+        kaons_th: TreeHandler,
+        pions_th: TreeHandler,
+        test_size: float = 0.1,
+    ):
+        """Prepares trainig_test_dataset using hipe4ml.train_test_generator
+
+        Args:
+            protons_th (TreeHandler): TreeHandler containg protons.
+            kaons_th (TreeHandler): TreeHandler containg kaons.
+            pions_th (TreeHandler): TreeHandler containg pions.
+            test_size(float, optional): Size of created test dataset. Defaults to 0.1.
+
+        Returns:
+            List containing respectively training set dataframe,
+            training label array, test set dataframe, test label array.
+        """
+        train_test_data = train_test_generator(
+            [protons_th, kaons_th, pions_th], [0, 1, 2], test_size=test_size
+        )
+        return train_test_data
 
     def load_hyper_params_ranges(
         self, json_file_name: str = None
