@@ -2,14 +2,14 @@ import unittest
 from unittest.mock import patch, mock_open
 import pandas as pd
 from hipe4ml.tree_handler import TreeHandler
-from train_model import TrainModel
+from prepare_model import PrepareModel
 
 
-class TestTrainModel(unittest.TestCase):
+class TestPrepareModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.train_model_without_opt = TrainModel("config.json", False)
-        cls.train_model_with_opt = TrainModel("config.json", True)
+        cls.train_model_without_opt = PrepareModel("config.json", False)
+        cls.train_model_with_opt = PrepareModel("config.json", True)
         cls.proton_entry = {
             "Complex_q": 1.0,
             "Complex_p": 1.0,
