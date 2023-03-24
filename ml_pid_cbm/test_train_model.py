@@ -5,7 +5,7 @@ from hipe4ml.tree_handler import TreeHandler
 from train_model import TrainModel
 
 
-class testTrainModel(unittest.TestCase):
+class TestTrainModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.train_model_without_opt = TrainModel("config.json", False)
