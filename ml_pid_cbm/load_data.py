@@ -29,7 +29,7 @@ class LoadData:
         self.anti_particles = anti_particles
         self.json_file_name = json_file_name
 
-    def get_proton_kaons_pions(
+    def get_protons_kaons_pions(
         self,
         tree_handler: TreeHandler,
         nsigma: float = 3,

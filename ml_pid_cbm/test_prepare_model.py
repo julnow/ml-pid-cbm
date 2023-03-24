@@ -92,3 +92,7 @@ class TestPrepareModel(unittest.TestCase):
                 TypeError, lambda: self.train_model_with_opt.prepare_model_handler()
             )
             self.train_model_without_opt.prepare_model_handler()
+
+    if __name__ == "__main__":
+        unittest.main()
+
