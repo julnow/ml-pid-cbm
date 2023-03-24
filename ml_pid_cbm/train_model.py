@@ -36,16 +36,17 @@ if __name__ == "__main__":
     )
     th = loader.load_tree()
     protons, kaons, pions = loader.get_protons_kaons_pions(th)
-    print(f"\nProtons, kaons, and pions loaded using file {data_file_name}")
+    print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
     del th
     gc.collect()
     # loading model handler
     model_hdl = PrepareModel(json_file_name, optimize_hyper_params)
     train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
+    print("\nPreparing model handler\n")
     model_hdl = model_hdl.prepare_model_handler(train_test_data=train_test_data)
-    print(f"ModelHandler ready using configuration from {json_file_name}")
+    print(f"\nModelHandler ready using configuration from {json_file_name}")
     # train model
     train = TrainModel(model_hdl, model_name)
-    print("Modela trained!")
+    print("\nModela trained!")
     train.save_model(model_name)
-    print(f"Model saved as {model_name}")
+    print(f"\nModel saved as {model_name}")

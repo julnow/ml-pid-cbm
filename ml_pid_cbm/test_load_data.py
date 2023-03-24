@@ -205,7 +205,9 @@ class TestLoadData(unittest.TestCase):
         tree_handler = TreeHandler()
         tree_handler.set_data_frame(pd.DataFrame(complete_data))
         with patch("builtins.open", mock_open(read_data=json_data)):
-            protons, kaons, pions = self.loader_pos.get_protons_kaons_pions(tree_handler)
+            protons, kaons, pions = self.loader_pos.get_protons_kaons_pions(
+                tree_handler
+            )
             # check if each particle type was loaded correctly
             pd.testing.assert_frame_equal(
                 protons.get_data_frame().reset_index(drop=True),

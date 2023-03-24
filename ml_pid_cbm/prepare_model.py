@@ -32,7 +32,7 @@ class PrepareModel:
             optimization of hyper params if this option is set to True. Defaults to None.
 
         Raises:
-            TypeError: Raises error if optimize_hyper_params is set to True, but no train_test_data was provided. 
+            TypeError: Raises error if optimize_hyper_params is set to True, but no train_test_data was provided.
 
         Returns:
             ModelHandler: Hipe4ml model handler ready for training.
@@ -65,8 +65,6 @@ class PrepareModel:
             )
             model_hdl = ModelHandler(model_clf, features_for_train)
         return model_hdl
-
-    
 
     def load_hyper_params_ranges(
         self, json_file_name: str = None
@@ -119,7 +117,7 @@ class PrepareModel:
         with open(json_file_name, "r") as json_file:
             features_for_train = json.load(json_file)["features_for_train"]
         return features_for_train
-    
+
     @staticmethod
     def prepare_train_test_data(
         protons_th: TreeHandler,
