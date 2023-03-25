@@ -22,7 +22,7 @@ class PrepareModel:
         self,
         json_file_name: str = None,
         train_test_data=None,
-    ) -> ModelHandler:
+    ):
         """Prepares model handler for training
 
         Args:
@@ -64,7 +64,10 @@ class PrepareModel:
                 learning_rate=learning_rate,
             )
             model_hdl = ModelHandler(model_clf, features_for_train)
-        return model_hdl
+        if self.optimize_hyper_params:
+            return model_hdl, study
+        else:
+            return model_hdl
 
     def load_hyper_params_ranges(
         self, json_file_name: str = None
