@@ -64,10 +64,11 @@ class PrepareModel:
                 learning_rate=learning_rate,
             )
             model_hdl = ModelHandler(model_clf, features_for_train)
+        print(f"\nModelHandler ready using configuration from {json_file_name}")
         if self.optimize_hyper_params:
             return model_hdl, study
         else:
-            return model_hdl
+            return model_hdl, None
 
     def load_hyper_params_ranges(
         self, json_file_name: str = None
