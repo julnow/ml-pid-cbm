@@ -227,3 +227,9 @@ class LoadData:
         """
         cut_string = f"{lower:.1f} < {cut_name} < {upper:.1f}"
         return cut_string
+    
+    @staticmethod
+    def load_file_name(json_file_name: str, training_or_test: str):
+        with open(json_file_name, "r") as json_file:
+            var_names = json.load(json_file)["file_names"]
+        return var_names[training_or_test]
