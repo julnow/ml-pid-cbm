@@ -1,4 +1,7 @@
-{
+{"file_names":{
+  "training": "/Users/julnow/gsi/mgr/trees/PlainTree200k_trdrich_12agev.root",
+  "test": "/Users/julnow/gsi/mgr/trees/PlainTree200k_trdrich_12agev.root"
+},
   "var_names": {
     "momentum": "Complex_p",
     "charge": "Complex_q",
