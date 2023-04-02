@@ -64,33 +64,24 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--antiparticles",
-        nargs=1,
-        default=False,
-        type=bool,
+        action='store_true',
         help="If should train on particles instead of particles with positive charge.",
     )
     parser.add_argument(
         "--hyperparams",
-        nargs=1,
-        default=False,
-        type=bool,
+        action='store_true',
         help="If should optimize hyper params instead of using const values from config file. Will use ranges from config file.",
     )
     graphs_group = parser.add_mutually_exclusive_group()
     graphs_group.add_argument(
         "--printplots",
-        #TODO action = BooleanOptional something
-        nargs=1,
-        default=False,
-        type=bool,
+        action='store_true',
         help="Creates plots and prints them without saving to file.",
     )
     graphs_group.add_argument(
         "--saveplots",
         "-plots", 
-        nargs=1,
-        default=False,
-        type=bool,
+        action='store_true',
         help="Creates plots and saves them to file, without printing.",
     )
     args = parser.parse_args()
