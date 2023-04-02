@@ -4,12 +4,12 @@ from validate_model import ValidateModel
 
 class TestValidateModel(unittest.TestCase):
     def test_parse_model_name(self):
-        model_name_positive = "model_0_3_positive"
+        model_name_positive = "model_0.0_6.0_positive"
         lower_p, upper_p, anti = ValidateModel.parse_model_name(model_name_positive)
-        self.assertEqual([lower_p, upper_p, anti], [0, 3, False])
-        model_name_anti = "model_-4_-1_anti"
+        self.assertEqual([lower_p, upper_p, anti], [0., 6., False])
+        model_name_anti = "model_3.0_6.0_anti"
         lower_p, upper_p, anti = ValidateModel.parse_model_name(model_name_anti)
-        self.assertEqual([lower_p, upper_p, anti], [-4, -1, True])
+        self.assertEqual([lower_p, upper_p, anti], [3., 6., True])
         model_name_incorrect = "model_anti_1_4"
         self.assertRaises(
             ValueError, lambda: ValidateModel.parse_model_name(model_name_incorrect)

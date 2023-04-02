@@ -1,6 +1,7 @@
 import argparse
 import os
 import pandas as pd
+from shutil import copy2
 from sklearn.metrics import confusion_matrix
 from load_data import LoadData
 import plotting_tools
@@ -34,9 +35,11 @@ if __name__ == "__main__":
     pickle_files = {f"{model}/validated_data.pickle" for model in models}
     all_particles_df = pd.concat((pd.read_pickle(f) for f in pickle_files))
     # new folder for all files
+    json_file_path = os.path.join(os.getcwd(), json_file_name)
     if not os.path.exists("all_models"):
         os.makedirs("all_models")
     os.chdir("all_models")
+    copy2(json_file_path, os.getcwd())
     # graphs
     # confusion matrix
     pid_variable = LoadData.load_var_name(json_file_name, "pid")

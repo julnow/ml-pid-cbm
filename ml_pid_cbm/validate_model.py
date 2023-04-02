@@ -135,7 +135,7 @@ class ValidateModel:
     @staticmethod
     def parse_model_name(
         name: str,
-        pattern: str = r"model_(-?\d+(?:\.\d+)?)_(-?\d+(?:\.\d+)?)_(anti)|model_(-?\d+(?:\.\d+)?)_(-?\d+(?:\.\d+)?)_([a-zA-Z]+)",
+        pattern: str = r"model_([\d.]+)_([\d.]+)_(anti)|model_([\d.]+)_([\d.]+)_([a-zA-Z]+)",
     ) -> Tuple[float, float, bool]:
         """Parser model name to get info about lower momentum cut, upper momentum cut, and if model is trained for anti_particles.
 
