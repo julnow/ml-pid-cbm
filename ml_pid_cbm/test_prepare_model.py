@@ -85,7 +85,7 @@ class TestPrepareModel(unittest.TestCase):
                 self.pion_tree_handler,
                 0.1,
             )
-            self.train_model_with_opt.prepare_model_handler(  # to modify and suppress output
+            self.train_model_with_opt.prepare_model_handler(  #TODO modify and suppress output
                 train_test_data=train_test_data
             )
             self.assertRaises(

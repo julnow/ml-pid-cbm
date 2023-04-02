@@ -1,4 +1,5 @@
-import os, gc
+import os
+import gc
 import argparse
 from shutil import copy2
 from hipe4ml.model_handler import ModelHandler
@@ -64,24 +65,24 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--antiparticles",
-        action='store_true',
+        action="store_true",
         help="If should train on particles instead of particles with positive charge.",
     )
     parser.add_argument(
         "--hyperparams",
-        action='store_true',
+        action="store_true",
         help="If should optimize hyper params instead of using const values from config file. Will use ranges from config file.",
     )
     graphs_group = parser.add_mutually_exclusive_group()
     graphs_group.add_argument(
         "--printplots",
-        action='store_true',
+        action="store_true",
         help="Creates plots and prints them without saving to file.",
     )
     graphs_group.add_argument(
         "--saveplots",
-        "-plots", 
-        action='store_true',
+        "-plots",
+        action="store_true",
         help="Creates plots and saves them to file, without printing.",
     )
     args = parser.parse_args()
@@ -103,10 +104,10 @@ if __name__ == "__main__":
     loader = LoadData(
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
-    th = loader.load_tree()
-    protons, kaons, pions = loader.get_protons_kaons_pions(th)
+    tree_handler = loader.load_tree()
+    protons, kaons, pions = loader.get_protons_kaons_pions(tree_handler)
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
-    del th
+    del tree_handler
     gc.collect()
     # change location to specific folder for this model
     json_file_path = os.path.join(os.getcwd(), json_file_name)

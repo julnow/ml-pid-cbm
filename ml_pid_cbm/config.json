@@ -1,5 +1,5 @@
 {"file_names":{
-  "training": "/Users/julnow/gsi/mgr/trees/PlainTree200k_trdrich_12agev.root",
+  "training": "/Users/julnow/gsi/mgr/trees/PlainTree2M_DCM_trdrich_12agev.root",
   "test": "/Users/julnow/gsi/mgr/trees/PlainTree200k_trdrich_12agev.root"
 },
   "var_names": {
@@ -30,9 +30,9 @@
   },
   "hyper_params": { 
     "values": {
-      "n_estimators": 596,
-      "max_depth": 5,
-      "learning_rate": 0.07161792803939408
+      "n_estimators": 717,
+      "max_depth": 4,
+      "learning_rate": 0.018835086737655014
     },
     "ranges": {
       "n_estimators": [400, 1000],
