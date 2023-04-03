@@ -3,6 +3,7 @@ import gc
 import argparse
 from shutil import copy2
 from hipe4ml.model_handler import ModelHandler
+from sklearn.utils.class_weight import compute_sample_weight
 from load_data import LoadData
 from prepare_model import PrepareModel
 import plotting_tools
@@ -17,15 +18,17 @@ class TrainModel:
         self.model_hdl = model_hdl
         self.model_name = model_name
 
-    def train_model_handler(self, train_test_data, model_hdl: ModelHandler = None):
+    def train_model_handler(self, train_test_data, sample_weights, model_hdl: ModelHandler = None):
         """Trains model handler
 
         Args:
             train_test_data (_type_): Train_test_data generated using a method from prepare_model module.
+            sample_weights(List[Float]): ndarray of shape (n_samples,) Array with sample weights.
+            To be computed with sklearn.utils.class_weight.compute_sample_weight
             model_hdl (ModelHandler, optional):  Hipe4ml model handler. Defaults to None.
         """
         model_hdl = model_hdl or self.model_hdl
-        model_hdl.train_test_model(train_test_data, multi_class_opt="ovo")
+        model_hdl.train_test_model(train_test_data, multi_class_opt="ovo", sample_weight=sample_weights)
         self.model_hdl = model_hdl
 
     def save_model(self, model_name: str = None, model_hdl: ModelHandler = None):
@@ -107,6 +110,7 @@ if __name__ == "__main__":
     tree_handler = loader.load_tree()
     protons, kaons, pions = loader.get_protons_kaons_pions(tree_handler)
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
+    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
     del tree_handler
     gc.collect()
     # change location to specific folder for this model
@@ -139,7 +143,11 @@ if __name__ == "__main__":
         plotting_tools.opt_contour_plot(study, save_plots)
     # train model
     train = TrainModel(model_hdl, model_name)
-    train.train_model_handler(train_test_data)
+    sample_weights = compute_sample_weight(
+        class_weight='balanced',
+        y=train_test_data[1] #labels of training dataset
+    )
+    train.train_model_handler(train_test_data, sample_weights)
     print("\nModela trained!")
     if create_plots:
         y_pred_train = model_hdl.predict(train_test_data[0], False)
