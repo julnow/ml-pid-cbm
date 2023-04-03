@@ -225,7 +225,7 @@ class LoadData:
         Returns:
             str: Formatted string in format "lower_value < cut_name < upper_value"
         """
-        cut_string = f"{lower:.1f} < {cut_name} < {upper:.1f}"
+        cut_string = f"{lower:.1f} <= {cut_name} < {upper:.1f}"
         return cut_string
     
     @staticmethod

@@ -141,7 +141,8 @@ class ValidateModel:
 
         Args:
             name (str): Name of the model.
-            pattern (_type_, optional): Pattern of model name. Defaults to r"model_(-?\d+(?:\.\d+)?)_(-?\d+(?:\.\d+)?)_(anti)|model_(-?\d+(?:\.\d+)?)_(-?\d+(?:\.\d+)?)_([a-zA-Z]+)".
+            pattern (_type_, optional): Pattern of model name.
+             Defaults to r"model_([\d.]+)_([\d.]+)_(anti)|model_([\d.]+)_([\d.]+)_([a-zA-Z]+)".
 
         Raises:
             ValueError: Raises error if model name incorrect.
