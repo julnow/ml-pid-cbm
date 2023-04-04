@@ -5,7 +5,7 @@ from shutil import copy2
 from sklearn.metrics import confusion_matrix
 from load_data import LoadData
 import plotting_tools
-from validate_model import validate
+from validate_model import ValidateModel
 
 if __name__ == "__main__":
     # parser for main class
@@ -50,9 +50,11 @@ if __name__ == "__main__":
     plotting_tools.plot_confusion_matrix(cnf_matrix)
     plotting_tools.plot_confusion_matrix(cnf_matrix, normalize=True)
     txt_file = open("efficiency_stats.txt", "w+")
+    validate = ValidateModel(-12, 12, False, "", all_particles_df)
     for pid in range(0, 3):
-        validate.efficiency_stats(cnf_matrix, pid, pid_variable, txt_file, all_particles_df)
+        validate.efficiency_stats(cnf_matrix, pid, pid_variable, txt_file)
     txt_file.close()
+    print("\nGenerating plots.")
     # tof plots
     # simulated:
     plotting_tools.tof_plot(

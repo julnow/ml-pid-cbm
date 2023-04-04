@@ -137,7 +137,7 @@ class ValidateModel:
             )
         self.particles_df = df_sigma_selected
 
-    def efficiency_stats(self, cm: np.ndarray, pid: float, pid_variable_name: str, txt_tile: io.TextIOWrapper, df: pd.DataFrame = None):
+    def efficiency_stats(self, cm: np.ndarray, pid: float, pid_variable_name: str, txt_tile: io.TextIOWrapper, dataframe: pd.DataFrame = None):
         """
         Prints efficiency stats from confusion matrix into efficiency_stats.txt file and stdout.
 
@@ -147,13 +147,13 @@ class ValidateModel:
             pid_variable_name (str): Variable name of pid in input tree.
             df (pd.DataFrame): Dataframe with all variables. Defaults to None.
         """
-        df = df or self.particles_df
+        df = dataframe or self.particles_df
         all_signals = len(df.loc[df[pid_variable_name] == pid])
         true_signal = cm[pid][pid]
         false_signal = 0
-        for i in range(len(cnf_matrix)):
+        for i, row in enumerate(cm):
             if i != pid:
-                false_signal += cm[pid][i] + cm[i][pid]
+                false_signal += row[pid] + cm[pid][i]
         reconstructed_signals = true_signal + false_signal
         false_to_true_signals = false_signal / true_signal
         efficiency = reconstructed_signals / all_signals * 100  # efficency in % for all
@@ -162,7 +162,7 @@ class ValidateModel:
         For particle ID = {pid}: 
         Efficiency: {efficiency:.2f}%
         Efficiency of true signal candidates reconstruction: {efficiency_true:.2f}%
-        False tu true positives ratio: {false_to_true_signals:.2f}%
+        False to true positives ratio: {false_to_true_signals:.2f}
         """
         print(stats)
         txt_tile.writelines(stats)

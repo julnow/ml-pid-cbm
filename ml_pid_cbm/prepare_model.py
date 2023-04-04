@@ -127,7 +127,7 @@ class PrepareModel:
         protons_th: TreeHandler,
         kaons_th: TreeHandler,
         pions_th: TreeHandler,
-        test_size: float = 0.1,
+        test_size: float = 0.2,
     ):
         """Prepares trainig_test_dataset using hipe4ml.train_test_generator
 
