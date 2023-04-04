@@ -1,9 +1,11 @@
 import os
 import re
+import io
 import argparse
 from typing import Tuple
 from collections import defaultdict
 import pandas as pd
+import numpy as np
 from sklearn.metrics import confusion_matrix
 from hipe4ml.model_handler import ModelHandler
 from load_data import LoadData
@@ -99,6 +101,9 @@ class ValidateModel:
         self.particles_df = df
 
     def save_df(self):
+        """
+        Saves dataframe with validated data into pickle format.
+        """
         self.particles_df.to_pickle("validated_data.pickle")
 
     def sigma_selection(self, pid: float, nsigma: float = 5, info: bool = False):
@@ -131,6 +136,36 @@ class ValidateModel:
                 + " particle entries"
             )
         self.particles_df = df_sigma_selected
+
+    def efficiency_stats(self, cm: np.ndarray, pid: float, pid_variable_name: str, txt_tile: io.TextIOWrapper):
+        """
+        Prints efficiency stats from confusion matrix into efficiency_stats.txt file and stdout.
+
+        Args:
+            cm (np.ndarray): Confusion matrix  generetated by sklearn.metrics.confusion_matrix.
+            pid (float): Pid of particles to print efficiency stats.
+            pid_variable_name (str): Variable name of pid in input tree.
+        """
+        df = self.particles_df
+        all_signals = len(df.loc[df[pid_variable_name] == pid])
+        true_signal = cm[pid][pid]
+        false_signal = 0
+        for i in range(len(cnf_matrix)):
+            if i != pid:
+                false_signal += cm[pid][i] + cm[i][pid]
+        reconstructed_signals = true_signal + false_signal
+        false_to_true_signals = false_signal / true_signal
+        efficiency = reconstructed_signals / all_signals * 100  # efficency in % for all
+        efficiency_true = true_signal / all_signals * 100  # efficency in % for all
+        stats = f"""
+        For particle ID = {pid}: 
+        Efficiency: {efficiency:.2f}%
+        Efficiency of true signal candidates reconstruction: {efficiency_true:.2f}%
+        False tu true positives ratio: {false_to_true_signals:.2f}%
+        """
+        print(stats)
+        txt_tile.writelines(stats)
+
 
     @staticmethod
     def parse_model_name(
@@ -239,6 +274,11 @@ if __name__ == "__main__":
     )
     plotting_tools.plot_confusion_matrix(cnf_matrix)
     plotting_tools.plot_confusion_matrix(cnf_matrix, normalize=True)
+    # confusion matrix statistic
+    txt_file = open("efficiency_stats.txt", "w+")
+    for pid in range(0, 3):
+        validate.efficiency_stats(cnf_matrix, pid, pid_variable, txt_file)
+    txt_file.close()
     # tof plots
     # simulated:
     plotting_tools.tof_plot(
