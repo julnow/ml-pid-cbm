@@ -137,7 +137,7 @@ class ValidateModel:
             )
         self.particles_df = df_sigma_selected
 
-    def efficiency_stats(self, cm: np.ndarray, pid: float, pid_variable_name: str, txt_tile: io.TextIOWrapper):
+    def efficiency_stats(self, cm: np.ndarray, pid: float, pid_variable_name: str, txt_tile: io.TextIOWrapper, df: pd.DataFrame = None):
         """
         Prints efficiency stats from confusion matrix into efficiency_stats.txt file and stdout.
 
@@ -145,8 +145,9 @@ class ValidateModel:
             cm (np.ndarray): Confusion matrix  generetated by sklearn.metrics.confusion_matrix.
             pid (float): Pid of particles to print efficiency stats.
             pid_variable_name (str): Variable name of pid in input tree.
+            df (pd.DataFrame): Dataframe with all variables. Defaults to None.
         """
-        df = self.particles_df
+        df = df or self.particles_df
         all_signals = len(df.loc[df[pid_variable_name] == pid])
         true_signal = cm[pid][pid]
         false_signal = 0
