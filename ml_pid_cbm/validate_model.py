@@ -41,17 +41,22 @@ class ValidateModel:
             proba_pion (float): Probablity threshold to classify particle as pion.
         """
         df = self.particles_df
-        df["xgb_preds"] = df[
-            ["model_output_0", "model_output_1", "model_output_2"]
-        ].idxmax(axis=1)
+        df["xgb_preds"] = (
+            df[["model_output_0", "model_output_1", "model_output_2"]]
+            .idxmax(axis=1)
+            .map(lambda x: x.lstrip("model_output_"))
+            .astype(int)
+        )
+        print(df["xgb_preds"])
+        # print(df[["Complex_pid", "xgb_preds", "model_output_0", "model_output_1", "model_output_2"]].head(30))
         # setting to bckgr if smaller than probability threshold
         proton = (df["xgb_preds"] == 0) & (df["model_output_0"] > proba_proton)
         pion = (df["xgb_preds"] == 1) & (df["model_output_1"] > proba_kaon)
         kaon = (df["xgb_preds"] == 2) & (df["model_output_2"] > proba_pion)
-        df.loc[(proton | pion | kaon), "xgb_preds"] = 3
-        df["xgb_preds"] = (
-            df["xgb_preds"].map(lambda x: x.lstrip("model_output_")).astype(float)
-        )
+        df.loc[~(proton | pion | kaon), "xgb_preds"] = 3
+        print(df["xgb_preds"])
+
+
         self.particles_df = df
 
     def remap_names(self):
@@ -137,7 +142,14 @@ class ValidateModel:
             )
         self.particles_df = df_sigma_selected
 
-    def efficiency_stats(self, cm: np.ndarray, pid: float, pid_variable_name: str, txt_tile: io.TextIOWrapper, dataframe: pd.DataFrame = None):
+    def efficiency_stats(
+        self,
+        cm: np.ndarray,
+        pid: float,
+        pid_variable_name: str,
+        txt_tile: io.TextIOWrapper,
+        dataframe: pd.DataFrame = None,
+    ):
         """
         Prints efficiency stats from confusion matrix into efficiency_stats.txt file and stdout.
 
@@ -166,7 +178,6 @@ class ValidateModel:
         """
         print(stats)
         txt_tile.writelines(stats)
-
 
     @staticmethod
     def parse_model_name(
@@ -252,7 +263,7 @@ if __name__ == "__main__":
     os.chdir(f"{model_name}")
     model_hdl = ModelHandler()
     model_hdl.load_model_handler(model_name)
-    test_particles.apply_model_handler(model_hdl)
+    test_particles.apply_model_handler(model_hdl, False)
     # validate model object
     validate = ValidateModel(
         lower_p, upper_p, is_anti, json_file_name, test_particles.get_data_frame()
