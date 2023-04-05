@@ -47,15 +47,11 @@ class ValidateModel:
             .map(lambda x: x.lstrip("model_output_"))
             .astype(int)
         )
-        print(df["xgb_preds"])
-        # print(df[["Complex_pid", "xgb_preds", "model_output_0", "model_output_1", "model_output_2"]].head(30))
         # setting to bckgr if smaller than probability threshold
         proton = (df["xgb_preds"] == 0) & (df["model_output_0"] > proba_proton)
         pion = (df["xgb_preds"] == 1) & (df["model_output_1"] > proba_kaon)
         kaon = (df["xgb_preds"] == 2) & (df["model_output_2"] > proba_pion)
         df.loc[~(proton | pion | kaon), "xgb_preds"] = 3
-        print(df["xgb_preds"])
-
 
         self.particles_df = df
 
@@ -277,7 +273,7 @@ if __name__ == "__main__":
     validate.remap_names()
     # sigma selection for each particle type
     for pid in range(0, 3):
-        validate.sigma_selection(pid)
+        validate.sigma_selection(pid, 3)
     # graphs
     # confusion matrix
     pid_variable = LoadData.load_var_name(json_file_name, "pid")
