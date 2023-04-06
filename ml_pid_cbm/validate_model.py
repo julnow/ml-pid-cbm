@@ -276,36 +276,36 @@ if __name__ == "__main__":
         validate.sigma_selection(pid, 3)
     # graphs
     # confusion matrix
-    pid_variable = LoadData.load_var_name(json_file_name, "pid")
+    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
     cnf_matrix = confusion_matrix(
-        validate.particles_df[pid_variable], validate.particles_df["xgb_preds"]
+        validate.particles_df[pid_variable_name], validate.particles_df["xgb_preds"]
     )
     plotting_tools.plot_confusion_matrix(cnf_matrix)
     plotting_tools.plot_confusion_matrix(cnf_matrix, normalize=True)
     # confusion matrix statistic
     txt_file = open("efficiency_stats.txt", "w+")
     for pid in range(0, 3):
-        validate.efficiency_stats(cnf_matrix, pid, pid_variable, txt_file)
+        validate.efficiency_stats(cnf_matrix, pid, pid_variable_name, txt_file)
     txt_file.close()
     # tof plots
     # simulated:
     plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable] == 0],
+        validate.particles_df[validate.particles_df[pid_variable_name] == 0],
         json_file_name,
         "protons (all simulated)",
     )
     plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable] == 1],
+        validate.particles_df[validate.particles_df[pid_variable_name] == 1],
         json_file_name,
         "kaons (all simulated)",
     )
     plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable] == 2],
+        validate.particles_df[validate.particles_df[pid_variable_name] == 2],
         json_file_name,
         "pions, muons, electrons (all simulated)",
     )
     plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable] == 3],
+        validate.particles_df[validate.particles_df[pid_variable_name] == 3],
         json_file_name,
         "bckgr (all simulated)",
     )
@@ -336,9 +336,16 @@ if __name__ == "__main__":
         validate.particles_df[validate.particles_df["xgb_preds"] == 0][
             mass2_variable_name
         ],
-        validate.particles_df[validate.particles_df[pid_variable] == 0][
+        validate.particles_df[validate.particles_df[pid_variable_name] == 0][
             mass2_variable_name
         ],
+        "Protons",
+        (-0.1, 1.5),
+    )
+    plotting_tools.plot_all_particles_mass2(
+        validate.particles_df[validate.particles_df["xgb_preds"] == 0],
+        mass2_variable_name,
+        pid_variable_name,
         "Protons",
         (-0.1, 1.5),
     )
@@ -346,9 +353,16 @@ if __name__ == "__main__":
         validate.particles_df[validate.particles_df["xgb_preds"] == 1][
             mass2_variable_name
         ],
-        validate.particles_df[validate.particles_df[pid_variable] == 1][
+        validate.particles_df[validate.particles_df[pid_variable_name] == 1][
             mass2_variable_name
         ],
+        "Kaons",
+        (-0.1, 0.4),
+    )
+    plotting_tools.plot_all_particles_mass2(
+        validate.particles_df[validate.particles_df["xgb_preds"] == 1],
+        mass2_variable_name,
+        pid_variable_name,
         "Kaons",
         (-0.1, 0.4),
     )
@@ -356,9 +370,16 @@ if __name__ == "__main__":
         validate.particles_df[validate.particles_df["xgb_preds"] == 2][
             mass2_variable_name
         ],
-        validate.particles_df[validate.particles_df[pid_variable] == 2][
+        validate.particles_df[validate.particles_df[pid_variable_name] == 2][
             mass2_variable_name
         ],
+        "Pions (& electrons, muons)",
+        (-0.15, 0.15),
+    )
+    plotting_tools.plot_all_particles_mass2(
+        validate.particles_df[validate.particles_df["xgb_preds"] == 2],
+        mass2_variable_name,
+        pid_variable_name,
         "Pions (& electrons, muons)",
         (-0.15, 0.15),
     )
@@ -366,9 +387,16 @@ if __name__ == "__main__":
         validate.particles_df[validate.particles_df["xgb_preds"] == 3][
             mass2_variable_name
         ],
-        validate.particles_df[validate.particles_df[pid_variable] == 3][
+        validate.particles_df[validate.particles_df[pid_variable_name] == 3][
             mass2_variable_name
         ],
+        "Background",
+        (-0.15, 0.15),
+    )
+    plotting_tools.plot_all_particles_mass2(
+        validate.particles_df[validate.particles_df["xgb_preds"] == 3],
+        mass2_variable_name,
+        pid_variable_name,
         "Background",
         (-0.15, 0.15),
     )

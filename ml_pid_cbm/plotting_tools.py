@@ -45,11 +45,12 @@ def tof_plot(
     plt.title(title, fontsize=20)
     fig.tight_layout()
     plt.colorbar()
+    title = title.replace(" ", "_")
     # savefig
     if save_fig:
-        file_name = particles_title.rstrip()
-        plt.savefig(f"{file_name}_{file_name}.png")
-        plt.savefig(f"{file_name}_{file_name}.pdf")
+        file_name = particles_title.replace(" ", "_")
+        plt.savefig(f"{title}_{file_name}.png")
+        plt.savefig(f"{title}_{file_name}.pdf")
     else:
         plt.show()
 
@@ -254,6 +255,68 @@ def plot_mass2(
     if save_fig:
         plt.savefig(f"mass2_{particles_title}.png")
         plt.savefig(f"mass2_{particles_title}.pdf")
+
+
+def plot_all_particles_mass2(
+    xgb_selected: Series,
+    mass2_variable_name: str,
+    pid_variable_name: str,
+    particles_title: str,
+    range1,
+    y_axis_log: bool = False,
+    save_fig: bool = True,
+):
+
+    # fig, axs = plt.subplots(2, 1,figsize=(15,10), sharex=True,  gridspec_kw={'width_ratios': [10],
+    #                            'height_ratios': [8,4]})
+    fig, axs = plt.subplots(figsize=(15, 10), dpi=300)
+
+    selected_protons = xgb_selected[xgb_selected[pid_variable_name] == 0][
+        mass2_variable_name
+    ]
+    selected_kaons = xgb_selected[xgb_selected[pid_variable_name] == 1][
+        mass2_variable_name
+    ]
+    selected_pions = xgb_selected[xgb_selected[pid_variable_name] == 2][
+        mass2_variable_name
+    ]
+
+    ns, bins, patches = axs.hist(
+        selected_protons, bins=300, facecolor="blue", alpha=0.4, range=range1
+    )
+    ns, bins, patches = axs.hist(
+        selected_kaons, bins=300, facecolor="orange", alpha=0.4, range=range1
+    )
+    ns, bins, patches = axs.hist(
+        selected_pions, bins=300, facecolor="green", alpha=0.4, range=range1
+    )
+
+    # plt.xlabel("Mass in GeV", fontsize = 15)
+    axs.set_ylabel("counts", fontsize=15)
+    # axs[0].grid()
+    axs.legend(
+        (
+            f"XGBoost selected true protons",
+            "XGBoost selected true kaons",
+            "XGBoost selected true pions",
+        ),
+        fontsize=15,
+        loc="upper right",
+    )
+    if y_axis_log:
+        axs.set_yscale("log")
+    # plt.rcParams["legend.loc"] = 'upper right'
+    title = f"ALL XGBoost selected (true and false positive) {particles_title} $mass^2$ histogram"
+    yName = r"Counts"
+    xName = r"$m^2$ $(GeV/c^2)^2$"
+    plt.xlabel(xName, fontsize=20, loc="right")
+    plt.ylabel(yName, fontsize=20, loc="top")
+    axs.set_title(title, fontsize=20)
+    axs.grid()
+    axs.tick_params(axis="both", which="major", labelsize=18)
+    if save_fig:
+        plt.savefig(f"mass2_all_selected_{particles_title}.png")
+        plt.savefig(f"mass2_all_selected_{particles_title}.pdf")
 
 
 def plot_eff_pT_rap(
