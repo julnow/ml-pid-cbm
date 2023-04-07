@@ -1,0 +1,16 @@
+
+        For particle ID = 0: 
+        Efficiency: 108.78%
+        Efficiency of true signal candidates reconstruction: 79.03%
+        False to true positives ratio: 0.38
+        
+        For particle ID = 1: 
+        Efficiency: 118.81%
+        Efficiency of true signal candidates reconstruction: 3.10%
+        False to true positives ratio: 37.33
+        
+        For particle ID = 2: 
+        Efficiency: 111.28%
+        Efficiency of true signal candidates reconstruction: 59.18%
+        False to true positives ratio: 0.88
+        
