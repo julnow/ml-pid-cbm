@@ -1,6 +1,6 @@
 {"file_names":{
-  "training": "/Users/julnow/gsi/mgr/trees/PlainTree2M_DCM_trdrich_12agev.root",
-  "test": "/Users/julnow/gsi/mgr/trees/PlainTree1M_URQMD_trdrich_12agev.root"
+  "training": "/Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrich_12agev.root",
+  "test": "/Users/julnow/gsi/mgr/trees/PlainTree2M_DCM_trdrich_12agev.root"
 },
   "var_names": {
     "momentum": "Complex_p",
@@ -30,14 +30,22 @@
   },
   "hyper_params": { 
     "values": {
-      "n_estimators": 717,
-      "max_depth": 4,
-      "learning_rate": 0.018835086737655014
+      "n_estimators": 776,
+      "max_depth": 7,
+      "learning_rate": 0.08112714035375232,
+      "gamma": 9,
+      "subsample": 0.71582, 
+      "alpha": 17
+
     },
     "ranges": {
-      "n_estimators": [400, 1000],
-      "max_depth": [2, 10],
-      "learning_rate": [0.01, 0.1]
+      "n_estimators": [300, 1200],
+      "max_depth": [2, 8],
+      "learning_rate": [0.01, 0.1],
+      "gamma": [0, 10],
+      "subsample": [0.3, 0.9],
+      "alpha": [0, 20]
+
     }
   }
 }

@@ -49,7 +49,7 @@ class PrepareModel:
                 cross_val_scoring="roc_auc_ovo",
                 timeout=120,
                 n_jobs=2,
-                n_trials=2,
+                n_trials=3,
                 direction="maximize",
             )
         elif self.optimize_hyper_params is True and train_test_data is None:
