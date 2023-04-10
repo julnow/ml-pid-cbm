@@ -28,6 +28,7 @@ jobs:
       run: |
         conda install anaconda-client -n base
         conda env update --file environment.yml --name main
+        conda init bash
         conda activate main
     - name: Lint with flake8
       run: |
