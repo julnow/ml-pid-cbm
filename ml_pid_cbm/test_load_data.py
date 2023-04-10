@@ -31,7 +31,7 @@ class TestLoadData(unittest.TestCase):
 
     def test_create_cut_string(self):
         # ideally formatted
-        expected_string = "0.1 < test_cut < 13.0"
+        expected_string = "0.1 <= test_cut < 13.0"
         self.assertEqual(
             LoadData.create_cut_string(0.1, 13.0, "test_cut"), expected_string
         )
@@ -53,7 +53,7 @@ class TestLoadData(unittest.TestCase):
         # mocking json file for testing
         with patch("builtins.open", mock_open(read_data=json_data)):
             quality_cuts = self.loader_pos.load_quality_cuts("test.json")
-            expected_cuts = ["-1.0 < Complex_mass2 < 2.0", "0.0 < Complex_pT < 2.0"]
+            expected_cuts = ["-1.0 <= Complex_mass2 < 2.0", "0.0 <= Complex_pT < 2.0"]
             self.assertEqual(quality_cuts, expected_cuts)
 
     def test_clean_tree(self):
