@@ -1,0 +1,34 @@
+
+Loading data from /Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrich_12agev.root
+
+
+Protons, kaons, and pions loaded using file /Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrich_12agev.root
+
+
+Preparing model handler
+
+Number of finished trials: 2
+Best trial:
+Value: 0.986285386804758
+Params: 
+    n_estimators: 1030
+    max_depth: 8
+    learning_rate: 0.027253331446345064
+    gamma: 4
+    subsample: 0.485140954250295
+    alpha: 7
+
+ModelHandler ready using configuration from config.json
+==============================
+Training xgboost model for classification
+Number of detected classes: 3
+Training the model: ...
+Training the model: Done!
+Testing the model: ...
+ROC_AUC_score: 0.986243
+Testing the model: Done!
+==============================
+
+Modela trained!
+
+Model saved as model_3.0_6.0_positive

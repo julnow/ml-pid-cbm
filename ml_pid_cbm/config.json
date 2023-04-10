@@ -1,0 +1,51 @@
+{"file_names":{
+  "training": "/Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrich_12agev.root",
+  "test": "/Users/julnow/gsi/mgr/trees/PlainTree2M_DCM_trdrich_12agev.root"
+},
+  "var_names": {
+    "momentum": "Complex_p",
+    "charge": "Complex_q",
+    "mass2": "Complex_mass2",
+    "pid": "Complex_pid"
+  },
+  "features_for_train":
+    ["Complex_mass2", "Complex_p", "Complex_pT", "Complex_eta"],
+  "cuts": {
+    "Complex_mass2": {
+      "lower": -1.0,
+      "upper": 2.0
+    },
+    "Complex_pT": {
+      "lower": 0.0,
+      "upper": 2.0
+    },
+    "Complex_p": {
+      "lower": -12.0,
+      "upper": 12.0
+    },
+    "Complex_eta": {
+      "lower": 0.0,
+      "upper": 6.0
+    }
+  },
+  "hyper_params": { 
+    "values": {
+      "n_estimators": 776,
+      "max_depth": 7,
+      "learning_rate": 0.08112714035375232,
+      "gamma": 9,
+      "subsample": 0.71582, 
+      "alpha": 17
+
+    },
+    "ranges": {
+      "n_estimators": [300, 1200],
+      "max_depth": [2, 8],
+      "learning_rate": [0.01, 0.1],
+      "gamma": [0, 10],
+      "subsample": [0.3, 0.9],
+      "alpha": [0, 20]
+
+    }
+  }
+}
