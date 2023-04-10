@@ -27,7 +27,7 @@ jobs:
     - name: Install dependencies
       run: |
         conda install anaconda-client -n base
-        conda env update --file environment.yml --name usr/base
+        conda env update --file environment.yml --name main
     - name: Lint with flake8
       run: |
         conda install flake8
