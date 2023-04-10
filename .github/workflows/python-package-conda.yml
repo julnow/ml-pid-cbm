@@ -42,4 +42,4 @@ jobs:
         eval "$(conda shell.bash hook)"
         conda activate main
         conda install pytest
-        python -pytest
+        pytest
