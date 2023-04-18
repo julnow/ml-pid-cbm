@@ -102,7 +102,6 @@ def correlations_plot(
     if save_fig:
         plt.savefig("correlations_plot.png")
         plt.savefig("correlations_plot.pdf")
-    plt.close()
 
 
 def opt_history_plot(study, save_fig: bool = True):
@@ -159,6 +158,7 @@ def roc_plot(
     plt.close()
 
 
+
 def plot_confusion_matrix(
     cm,
     classes=["proton", "kaon", "pion", "bckgr"],
@@ -208,6 +208,7 @@ def plot_confusion_matrix(
     plt.close()
 
 
+
 def plot_mass2(
     xgb_mass: Series,
     sim_mass: Series,
@@ -249,6 +250,7 @@ def plot_mass2(
         plt.savefig(f"mass2_{particles_title}.png")
         plt.savefig(f"mass2_{particles_title}.pdf")
     plt.close()
+
 
 
 def plot_all_particles_mass2(
@@ -363,6 +365,7 @@ def plot_eff_pT_rap(
     plt.close()
 
 
+
 def plot_pt_rapidity(
     df: DataFrame,
     pid: float,
@@ -410,7 +413,7 @@ def plot_shap_summary(
     x_train: DataFrame,
     y_train: DataFrame,
     model_hdl: ModelHandler,
-    save_fig: bool = True,
+    save_fig: bool = True
 ):
     explainer = shap.TreeExplainer(model_hdl.get_original_model())
     shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
@@ -418,11 +421,7 @@ def plot_shap_summary(
     for i in range(num_classes):
         fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
         shap.summary_plot(
-            shap_values[i],
-            x_train,
-            feature_names=x_train.columns,
-            plot_size=[10, 15],
-            show=False,
+            shap_values[i], x_train, feature_names=x_train.columns, plot_size=[10, 15], show=False
         )
         w, h = plt.gcf().get_size_inches()
         plt.gcf().set_size_inches(h + 2, h)
@@ -435,12 +434,7 @@ def plot_shap_summary(
         ax.spines["bottom"].set_visible(True)
         ax.spines["left"].set_visible(True)
         ax.tick_params(
-            axis="both",
-            which="major",
-            length=10,
-            direction="in",
-            labelsize=15,
-            zorder=4,
+            axis="both", which="major", length=10, direction="in", labelsize=15, zorder=4
         )
         ax.minorticks_on()
         ax.tick_params(
@@ -450,5 +444,5 @@ def plot_shap_summary(
         if save_fig:
             plt.savefig(f"shap_summary_{i}.png")
             plt.savefig(f"shap_summary_{i}.pdf")
-        plt.show()
         plt.close()
+        
