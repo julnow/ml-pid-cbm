@@ -413,6 +413,7 @@ def plot_shap_summary(
     x_train: DataFrame,
     y_train: DataFrame,
     model_hdl: ModelHandler,
+    feature_names: List[str],
     save_fig: bool = True
 ):
     explainer = shap.TreeExplainer(model_hdl.get_original_model())
@@ -421,7 +422,7 @@ def plot_shap_summary(
     for i in range(num_classes):
         fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
         shap.summary_plot(
-            shap_values[i], x_train, feature_names=x_train.columns, plot_size=[10, 15], show=False
+            shap_values[i], x_train, feature_names=feature_names, plot_size=[10, 15], show=False
         )
         w, h = plt.gcf().get_size_inches()
         plt.gcf().set_size_inches(h + 2, h)

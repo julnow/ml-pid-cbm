@@ -161,8 +161,12 @@ if __name__ == "__main__":
         )
         plotting_tools.roc_plot(train_test_data[3], y_pred_test, save_fig=save_plots)
         # shapleys for each class
+        feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
-            train_test_data[2][features_for_train], y_pred_test, model_hdl
+            train_test_data[2][features_for_train],
+            y_pred_test,
+            model_hdl,
+            feature_names,
         )
 
     train.save_model(model_name)
