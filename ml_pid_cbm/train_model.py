@@ -18,7 +18,9 @@ class TrainModel:
         self.model_hdl = model_hdl
         self.model_name = model_name
 
-    def train_model_handler(self, train_test_data, sample_weights, model_hdl: ModelHandler = None):
+    def train_model_handler(
+        self, train_test_data, sample_weights, model_hdl: ModelHandler = None
+    ):
         """Trains model handler
 
         Args:
@@ -28,7 +30,9 @@ class TrainModel:
             model_hdl (ModelHandler, optional):  Hipe4ml model handler. Defaults to None.
         """
         model_hdl = model_hdl or self.model_hdl
-        model_hdl.train_test_model(train_test_data, multi_class_opt="ovo", sample_weight=sample_weights)
+        model_hdl.train_test_model(
+            train_test_data, multi_class_opt="ovo", sample_weight=sample_weights
+        )
         self.model_hdl = model_hdl
 
     def save_model(self, model_name: str = None, model_hdl: ModelHandler = None):
@@ -136,6 +140,7 @@ if __name__ == "__main__":
     # loading model handler
     model_hdl = PrepareModel(json_file_name, optimize_hyper_params)
     train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
+    features_for_train = model_hdl.load_features_for_train()
     print("\nPreparing model handler\n")
     model_hdl, study = model_hdl.prepare_model_handler(train_test_data=train_test_data)
     if create_plots and optimize_hyper_params:
@@ -144,11 +149,10 @@ if __name__ == "__main__":
     # train model
     train = TrainModel(model_hdl, model_name)
     sample_weights = compute_sample_weight(
-        class_weight='balanced',
-        y=train_test_data[1] #labels of training dataset
+        class_weight="balanced", y=train_test_data[1]  # labels of training dataset
     )
     train.train_model_handler(train_test_data, sample_weights)
-    print("\nModela trained!")
+    print("\nModel trained!")
     if create_plots:
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
@@ -156,5 +160,9 @@ if __name__ == "__main__":
             train.model_hdl, train_test_data, save_fig=save_plots
         )
         plotting_tools.roc_plot(train_test_data[3], y_pred_test, save_fig=save_plots)
+        # shapleys for each class
+        plotting_tools.plot_shap_summary(
+            train_test_data[2][features_for_train], y_pred_test, model_hdl
+        )
 
     train.save_model(model_name)

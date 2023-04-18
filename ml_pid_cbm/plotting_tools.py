@@ -1,11 +1,11 @@
 from typing import List
+import itertools
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import matplotlib.cm as cm
 from matplotlib import rcParams
 from pandas import DataFrame
 from pandas import Series
-import itertools
 import numpy as np
 from hipe4ml.plot_utils import plot_distr, plot_corr, plot_output_train_test, plot_roc
 from hipe4ml.tree_handler import TreeHandler
@@ -14,6 +14,7 @@ from optuna.visualization import (
     plot_optimization_history,
     plot_contour,
 )
+import shap
 from load_data import LoadData
 
 
@@ -51,8 +52,7 @@ def tof_plot(
         file_name = particles_title.replace(" ", "_")
         plt.savefig(f"{title}_{file_name}.png")
         plt.savefig(f"{title}_{file_name}.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def var_distributions_plot(
@@ -61,7 +61,6 @@ def var_distributions_plot(
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
-
     params = {
         "axes.titlesize": "22",
         "axes.labelsize": "22",
@@ -85,8 +84,7 @@ def var_distributions_plot(
     if save_fig:
         plt.savefig("vars_disitributions.png")
         plt.savefig("vars_disitributions.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def correlations_plot(
@@ -104,8 +102,7 @@ def correlations_plot(
     if save_fig:
         plt.savefig("correlations_plot.png")
         plt.savefig("correlations_plot.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def opt_history_plot(study, save_fig: bool = True):
@@ -115,8 +112,7 @@ def opt_history_plot(study, save_fig: bool = True):
     if save_fig:
         plt.savefig("optimization_history.png")
         plt.savefig("optimization_history.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def opt_contour_plot(study, save_fig: bool = True):
@@ -126,8 +122,7 @@ def opt_contour_plot(study, save_fig: bool = True):
     if save_fig:
         plt.savefig("optimization_contour.png")
         plt.savefig("optimization_contour.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def output_train_test_plot(
@@ -146,8 +141,7 @@ def output_train_test_plot(
         for idx, fig in enumerate(ml_out_fig):
             fig.savefig(f"output_train_test_plot_{idx}.png")
             fig.savefig(f"output_train_test_plot_{idx}.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def roc_plot(
@@ -162,8 +156,7 @@ def roc_plot(
     if save_fig:
         plt.savefig("roc_plot.png")
         plt.savefig("roc_plot.pdf")
-    else:
-        plt.show()
+    plt.close()
 
 
 def plot_confusion_matrix(
@@ -212,6 +205,7 @@ def plot_confusion_matrix(
     if save_fig:
         plt.savefig(f"{filename}.png")
         plt.savefig(f"{filename}.pdf")
+    plt.close()
 
 
 def plot_mass2(
@@ -222,7 +216,6 @@ def plot_mass2(
     y_axis_log: bool = False,
     save_fig: bool = True,
 ):
-
     # fig, axs = plt.subplots(2, 1,figsize=(15,10), sharex=True,  gridspec_kw={'width_ratios': [10],
     #                            'height_ratios': [8,4]})
     fig, axs = plt.subplots(figsize=(15, 10), dpi=300)
@@ -255,6 +248,7 @@ def plot_mass2(
     if save_fig:
         plt.savefig(f"mass2_{particles_title}.png")
         plt.savefig(f"mass2_{particles_title}.pdf")
+    plt.close()
 
 
 def plot_all_particles_mass2(
@@ -266,7 +260,6 @@ def plot_all_particles_mass2(
     y_axis_log: bool = False,
     save_fig: bool = True,
 ):
-
     # fig, axs = plt.subplots(2, 1,figsize=(15,10), sharex=True,  gridspec_kw={'width_ratios': [10],
     #                            'height_ratios': [8,4]})
     fig, axs = plt.subplots(figsize=(15, 10), dpi=300)
@@ -317,6 +310,7 @@ def plot_all_particles_mass2(
     if save_fig:
         plt.savefig(f"mass2_all_selected_{particles_title}.png")
         plt.savefig(f"mass2_all_selected_{particles_title}.pdf")
+    plt.close()
 
 
 def plot_eff_pT_rap(
@@ -329,7 +323,6 @@ def plot_eff_pT_rap(
     nbins=50,
     save_fig: bool = True,
 ):
-
     df_true = df[(df[pid_var_name] == pid)]  # simulated
     df_reco = df[(df["xgb_preds"] == pid)]  # reconstructed by xgboost
 
@@ -367,6 +360,7 @@ def plot_eff_pT_rap(
     if save_fig:
         plt.savefig(f"plot_eff_pT_rap_ID={pid}.png")
         plt.savefig(f"plot_eff_pT_rap_ID={pid}.pdf")
+    plt.close()
 
 
 def plot_pt_rapidity(
@@ -379,7 +373,6 @@ def plot_pt_rapidity(
     nbins=50,
     save_fig: bool = True,
 ):
-
     df_true = df[(df[pid_var_name] == pid)]  # simulated
 
     x = np.array(df_true[rapidity_var_name])
@@ -410,3 +403,52 @@ def plot_pt_rapidity(
     if save_fig:
         plt.savefig(f"plot_pt_rapidity_ID={pid}.png")
         plt.savefig(f"plot_pt_rapidity_ID={pid}.pdf")
+    plt.close()
+
+
+def plot_shap_summary(
+    x_train: DataFrame,
+    y_train: DataFrame,
+    model_hdl: ModelHandler,
+    save_fig: bool = True,
+):
+    explainer = shap.TreeExplainer(model_hdl.get_original_model())
+    shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
+    num_classes = len(shap_values)  # get the number of classes
+    for i in range(num_classes):
+        fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+        shap.summary_plot(
+            shap_values[i],
+            x_train,
+            feature_names=x_train.columns,
+            plot_size=[10, 15],
+            show=False,
+        )
+        w, h = plt.gcf().get_size_inches()
+        plt.gcf().set_size_inches(h + 2, h)
+        plt.gcf().set_size_inches(w, w * 3 / 4)
+        plt.gcf().axes[-1].set_aspect("auto")
+        plt.gcf().axes[-1].set_box_aspect(50)
+        plt.xlabel(f"SHAP values for class {i}", fontsize=18)
+        ax.spines["top"].set_visible(True)
+        ax.spines["right"].set_visible(True)
+        ax.spines["bottom"].set_visible(True)
+        ax.spines["left"].set_visible(True)
+        ax.tick_params(
+            axis="both",
+            which="major",
+            length=10,
+            direction="in",
+            labelsize=15,
+            zorder=4,
+        )
+        ax.minorticks_on()
+        ax.tick_params(
+            axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
+        )
+        fig.tight_layout()
+        if save_fig:
+            plt.savefig(f"shap_summary_{i}.png")
+            plt.savefig(f"shap_summary_{i}.pdf")
+        plt.show()
+        plt.close()
