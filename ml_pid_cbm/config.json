@@ -9,7 +9,8 @@
     "pid": "Complex_pid"
   },
   "features_for_train":
-    ["Complex_mass2", "Complex_p", "Complex_pT", "Complex_eta"],
+    ["Complex_pT", "Complex_mass2", "Complex_chi2_vtx", "Complex_eta", "Complex_nhits_trd", "Complex_radial_angle_rich", 
+    "Complex_radial_pos_rich", "Complex_radius_rich", "Complex_axis_a_rich", "Complex_axis_b_rich", "Complex_chi2_ov_ndf_rich"],
   "cuts": {
     "Complex_mass2": {
       "lower": -1.0,
