@@ -148,6 +148,8 @@ class ValidateModel:
     ):
         """
         Prints efficiency stats from confusion matrix into efficiency_stats.txt file and stdout.
+        Efficiency is calculated as correctly identified X / all true simulated X
+        Purity is calulated as correctly identified X / all identified X
 
         Args:
             cm (np.ndarray): Confusion matrix  generetated by sklearn.metrics.confusion_matrix.
@@ -156,21 +158,19 @@ class ValidateModel:
             df (pd.DataFrame): Dataframe with all variables. Defaults to None.
         """
         df = dataframe or self.particles_df
-        all_signals = len(df.loc[df[pid_variable_name] == pid])
+        all_simulated_signal = len(df.loc[df[pid_variable_name] == pid])
         true_signal = cm[pid][pid]
         false_signal = 0
         for i, row in enumerate(cm):
             if i != pid:
                 false_signal += row[pid] + cm[pid][i]
         reconstructed_signals = true_signal + false_signal
-        false_to_true_signals = false_signal / true_signal
-        efficiency = reconstructed_signals / all_signals * 100  # efficency in % for all
-        efficiency_true = true_signal / all_signals * 100  # efficency in % for all
+        efficiency = true_signal / all_simulated_signal * 100  # efficency calculated as true signal/all signal
+        purity = true_signal / reconstructed_signals * 100  #purity calculated as true signal/reconstructed_signals
         stats = f"""
         For particle ID = {pid}: 
         Efficiency: {efficiency:.2f}%
-        Efficiency of true signal candidates reconstruction: {efficiency_true:.2f}%
-        False to true positives ratio: {false_to_true_signals:.2f}
+        Purity: {purity:.2f}%
         """
         print(stats)
         txt_tile.writelines(stats)
