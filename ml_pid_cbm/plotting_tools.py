@@ -50,8 +50,8 @@ def tof_plot(
     # savefig
     if save_fig:
         file_name = particles_title.replace(" ", "_")
-        plt.savefig(f"{title}_{file_name}.png")
-        plt.savefig(f"{title}_{file_name}.pdf")
+        plt.savefig(f"{file_name}.png")
+        plt.savefig(f"{file_name}.pdf")
     plt.close()
 
 
