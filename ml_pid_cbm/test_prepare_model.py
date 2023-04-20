@@ -8,8 +8,8 @@ from prepare_model import PrepareModel
 class TestPrepareModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.train_model_without_opt = PrepareModel("config.json", False)
-        cls.train_model_with_opt = PrepareModel("config.json", True)
+        cls.train_model_without_opt = PrepareModel("config.json", False, False)
+        cls.train_model_with_opt = PrepareModel("config.json", True, False)
         cls.proton_entry = {
             "Complex_q": 1.0,
             "Complex_p": 1.0,
