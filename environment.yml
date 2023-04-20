@@ -1,12 +1,14 @@
 name: main
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - python=3.8
   - matplotlib
   - pandas
   - numpy
+  - plotly
+  - xgboost
+  - xgboost-gpu
   - pip:
     - hipe4ml
     - optuna
