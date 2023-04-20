@@ -7,8 +7,7 @@ dependencies:
   - pandas
   - numpy
   - plotly
-  - xgboost
-  - xgboost-gpu
+  - py-xgboost-gpu
   - pip:
     - hipe4ml
     - optuna
