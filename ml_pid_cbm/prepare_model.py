@@ -14,9 +14,10 @@ class PrepareModel:
     Class for preparing the ML pid ModelHandler
     """
 
-    def __init__(self, json_file_name: str, optimize_hyper_params: bool):
+    def __init__(self, json_file_name: str, optimize_hyper_params: bool, use_gpu: bool):
         self.json_file_name = json_file_name
         self.optimize_hyper_params = optimize_hyper_params
+        self.use_gpu = use_gpu
 
     def prepare_model_handler(
         self,
@@ -39,8 +40,12 @@ class PrepareModel:
         """
         json_file_name = json_file_name or self.json_file_name
         features_for_train = self.load_features_for_train(json_file_name)
+        if self.use_gpu:
+            tree_method = "gpu_hist"
+        else:
+            tree_method = "hist"
         if self.optimize_hyper_params is True and train_test_data is not None:
-            model_clf = xgb.XGBClassifier()
+            model_clf = xgb.XGBClassifier(tree_method=tree_method)
             model_hdl = ModelHandler(model_clf, features_for_train)
             hyper_params_ranges = self.load_hyper_params_ranges(json_file_name)
             study = model_hdl.optimize_params_optuna(
@@ -62,6 +67,7 @@ class PrepareModel:
                 n_estimators=n_estimators,
                 max_depth=max_depth,
                 learning_rate=learning_rate,
+                tree_method=tree_method,
             )
             model_hdl = ModelHandler(model_clf, features_for_train)
         print(f"\nModelHandler ready using configuration from {json_file_name}")

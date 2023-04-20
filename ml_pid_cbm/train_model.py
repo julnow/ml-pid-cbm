@@ -80,6 +80,11 @@ if __name__ == "__main__":
         action="store_true",
         help="If should optimize hyper params instead of using const values from config file. Will use ranges from config file.",
     )
+    parser.add_argument(
+        "--gpu",
+        action="store_true",
+        help="If should use GPU for training. Remember that xgboost-gpu version is needed for this.",
+    )
     graphs_group = parser.add_mutually_exclusive_group()
     graphs_group.add_argument(
         "--printplots",
@@ -98,8 +103,9 @@ if __name__ == "__main__":
     lower_p_cut, upper_p_cut = args.momentum[0], args.momentum[1]
     anti_particles = args.antiparticles
     optimize_hyper_params = args.hyperparams
+    use_gpu = args.gpu
     create_plots = args.printplots or args.saveplots or False
-    save_plots = args.saveplots or False
+    save_plots = args.saveplots
     if anti_particles:
         model_name = f"model_{lower_p_cut:.1f}_{upper_p_cut:.1f}_anti"
     else:
@@ -138,7 +144,7 @@ if __name__ == "__main__":
             vars_to_draw, [protons, kaons, pions], save_fig=save_plots
         )
     # loading model handler
-    model_hdl = PrepareModel(json_file_name, optimize_hyper_params)
+    model_hdl = PrepareModel(json_file_name, optimize_hyper_params, use_gpu)
     train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
     features_for_train = model_hdl.load_features_for_train()
     print("\nPreparing model handler\n")
