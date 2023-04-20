@@ -7,6 +7,7 @@ mlpidpath=$WORK/ml-pid-cbm/ml_pid_cbm
 
 #load conda
 export PATH=/lustre/cbm/users/jnowak/miniconda3/bin/:$PATH
+eval "$(conda shell.bash hook)"
 conda activate cbm23
 #get into folder for training
 CONFIG=$mlpidpath/slurm_config.json
