@@ -1,6 +1,6 @@
 #!/bin/bash
 
-conda init bash
+eval "$(conda shell.bash hook)"
 conda activate cbm22
 
 CONFIG="config.json"

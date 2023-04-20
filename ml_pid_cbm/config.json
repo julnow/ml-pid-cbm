@@ -1,6 +1,6 @@
 {"file_names":{
-  "training": "/Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrich_12agev.root",
-  "test": "/Users/julnow/gsi/mgr/trees/PlainTree2M_DCM_trdrich_12agev.root"
+  "training": "/Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrichrec_12agev.root",
+  "test": "/Users/julnow/gsi/mgr/trees/PlainTree2M_URQMD_trdrichrec_12agev.root"
 },
   "var_names": {
     "momentum": "Complex_p",
@@ -9,8 +9,9 @@
     "pid": "Complex_pid"
   },
   "features_for_train":
-    ["Complex_pT", "Complex_mass2", "Complex_chi2_vtx", "Complex_eta", "Complex_nhits_trd", "Complex_radial_angle_rich", 
-    "Complex_radial_pos_rich", "Complex_radius_rich", "Complex_axis_a_rich", "Complex_axis_b_rich", "Complex_chi2_ov_ndf_rich"],
+    ["Complex_pT", "Complex_mass2", 
+    "Complex_n_hits_trd", "Complex_e_loss_0", "Complex_e_loss_1", "Complex_e_loss_2", "Complex_e_loss_3"
+  , "Complex_chi2_vtx", "Complex_M"],
   "cuts": {
     "Complex_mass2": {
       "lower": -1.0,
