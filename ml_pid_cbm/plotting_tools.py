@@ -98,10 +98,11 @@ def correlations_plot(
     plt.subplots_adjust(
         left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55
     )
-    plot_corr(data_list, vars_to_draw, leg_labels)
-    if save_fig:
-        plt.savefig("correlations_plot.png")
-        plt.savefig("correlations_plot.pdf")
+    cor_plots = plot_corr(data_list, vars_to_draw, leg_labels)
+    for i, plot in enumerate(cor_plots):
+        if save_fig:
+            plot.savefig(f"correlations_plot_{i}.png")
+            plot.savefig(f"correlations_plot_{i}.pdf")
 
 
 def opt_history_plot(study, save_fig: bool = True):
