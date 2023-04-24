@@ -45,6 +45,8 @@ jobs:
         pytest
     - name: Generate coverage report
       run: |
+        eval "$(conda shell.bash hook)"
+        conda activate main
         coverage xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
