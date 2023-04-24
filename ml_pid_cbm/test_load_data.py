@@ -64,7 +64,7 @@ class TestLoadData(unittest.TestCase):
         with patch("builtins.open", mock_open(read_data=json_data)):
             # only positive particles
             test_str = self.loader_pos.clean_tree()
-            expected_str = "0.0 <= Complex_pT < 2.0 & 0.0 <= Complex_eta < 6.0 & 0.0 <= Complex_p < 3.0 & Complex_q > 0"
+            expected_str = "(0.0 <= Complex_pT < 2.0) & (0.0 <= Complex_eta < 6.0) & (0.0 <= Complex_p < 3.0) & (Complex_q > 0)"
             self.assertEqual(test_str, expected_str)
             
 
