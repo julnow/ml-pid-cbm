@@ -9,7 +9,7 @@
     "pid": "Complex_pid"
   },
   "features_for_train":
-    ["Complex_mass2_over_p2", "Complex_vtx_chi2", "Complex_chi2_ov_ndf_vtx"],
+    ["Complex_l", "Complex_t", "Complex_vtx_chi2", "Complex_chi2_ov_ndf_vtx"],
   "cuts": {
     "Complex_mass2": {
       "lower": -1.0,
@@ -46,8 +46,8 @@
       "learning_rate": 0.04281706988524796,
       "gamma": 1,
       "subsample": 0.6296676786626392, 
-      "alpha": 9
-
+      "alpha": 0,
+      "lambda": 1
     },
     "ranges": {
       "n_estimators": [300, 1200],
@@ -55,7 +55,8 @@
       "learning_rate": [0.01, 0.1],
       "gamma": [0, 10],
       "subsample": [0.3, 0.9],
-      "alpha": [0, 20]
+      "alpha": [0, 5],
+      "lambda": [0, 10]
 
     }
   }
