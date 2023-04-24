@@ -1,5 +1,6 @@
 from typing import List
 import itertools
+from concurrent.futures import ThreadPoolExecutor
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import matplotlib.cm as cm
@@ -414,43 +415,49 @@ def plot_shap_summary(
     model_hdl: ModelHandler,
     feature_names: List[str],
     save_fig: bool = True,
+    n_workers: int = 1,
 ):
     explainer = shap.TreeExplainer(model_hdl.get_original_model())
     shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
     num_classes = len(shap_values)  # get the number of classes
-    for i in range(num_classes):
-        fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-        shap.summary_plot(
-            shap_values[i],
-            x_train,
-            feature_names=feature_names,
-            plot_size=[10, 15],
-            show=False,
-        )
-        w, h = plt.gcf().get_size_inches()
-        plt.gcf().set_size_inches(h + 2, h)
-        plt.gcf().set_size_inches(w, w * 3 / 4)
-        plt.gcf().axes[-1].set_aspect("auto")
-        plt.gcf().axes[-1].set_box_aspect(50)
-        plt.xlabel(f"SHAP values for class {i}", fontsize=18)
-        ax.spines["top"].set_visible(True)
-        ax.spines["right"].set_visible(True)
-        ax.spines["bottom"].set_visible(True)
-        ax.spines["left"].set_visible(True)
-        ax.tick_params(
-            axis="both",
-            which="major",
-            length=10,
-            direction="in",
-            labelsize=15,
-            zorder=4,
-        )
-        ax.minorticks_on()
-        ax.tick_params(
-            axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
-        )
-        fig.tight_layout()
-        if save_fig:
-            plt.savefig(f"shap_summary_{i}.png")
-            plt.savefig(f"shap_summary_{i}.pdf")
-        plt.close()
+    
+    with ThreadPoolExecutor(max_workers=n_workers) as executor:
+        for i in range(num_classes):
+            executor.submit(plot_shap_class, i, shap_values[i], x_train, feature_names, save_fig)
+
+def plot_shap_class(i, shap_values_i, x_train, feature_names, save_fig):
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+    shap.summary_plot(
+        shap_values_i,
+        x_train,
+        feature_names=feature_names,
+        plot_size=[10, 15],
+        show=False,
+    )
+    w, h = plt.gcf().get_size_inches()
+    plt.gcf().set_size_inches(h + 2, h)
+    plt.gcf().set_size_inches(w, w * 3 / 4)
+    plt.gcf().axes[-1].set_aspect("auto")
+    plt.gcf().axes[-1].set_box_aspect(50)
+    plt.xlabel(f"SHAP values for class {i}", fontsize=18)
+    ax.spines["top"].set_visible(True)
+    ax.spines["right"].set_visible(True)
+    ax.spines["bottom"].set_visible(True)
+    ax.spines["left"].set_visible(True)
+    ax.tick_params(
+        axis="both",
+        which="major",
+        length=10,
+        direction="in",
+        labelsize=15,
+        zorder=4,
+    )
+    ax.minorticks_on()
+    ax.tick_params(
+        axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
+    )
+    fig.tight_layout()
+    if save_fig:
+        plt.savefig(f"shap_summary_{i}.png")
+        plt.savefig(f"shap_summary_{i}.pdf")
+    plt.close()
