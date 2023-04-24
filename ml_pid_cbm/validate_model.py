@@ -288,6 +288,7 @@ if __name__ == "__main__":
         validate.efficiency_stats(cnf_matrix, pid, pid_variable_name, txt_file)
     txt_file.close()
     # tof plots
+    print("Generating plots.")
     # simulated:
     plotting_tools.tof_plot(
         validate.particles_df[validate.particles_df[pid_variable_name] == 0],
