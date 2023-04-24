@@ -273,7 +273,7 @@ if __name__ == "__main__":
     validate.remap_names()
     # sigma selection for each particle type
     for pid in range(0, 3):
-        validate.sigma_selection(pid, 3)
+        validate.sigma_selection(pid, 4)
     # graphs
     # confusion matrix
     pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
