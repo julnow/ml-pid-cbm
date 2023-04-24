@@ -271,7 +271,7 @@ if __name__ == "__main__":
     os.chdir(f"{model_name}")
     model_hdl = ModelHandler()
     model_hdl.load_model_handler(model_name)
-    test_particles = loader.load_tree(model_hdl, max_workers=n_workers)
+    test_particles = loader.load_tree(model_handler=model_hdl, max_workers=n_workers)
     # validate model object
     validate = ValidateModel(
         lower_p, upper_p, is_anti, json_file_name, test_particles.get_data_frame()
