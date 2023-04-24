@@ -420,10 +420,13 @@ def plot_shap_summary(
     explainer = shap.TreeExplainer(model_hdl.get_original_model())
     shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
     num_classes = len(shap_values)  # get the number of classes
-    
+
     with ThreadPoolExecutor(max_workers=n_workers) as executor:
         for i in range(num_classes):
-            executor.submit(plot_shap_class, i, shap_values[i], x_train, feature_names, save_fig)
+            executor.submit(
+                plot_shap_class, i, shap_values[i], x_train, feature_names, save_fig
+            )
+
 
 def plot_shap_class(i, shap_values_i, x_train, feature_names, save_fig):
     fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
