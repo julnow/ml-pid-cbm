@@ -85,6 +85,7 @@ if __name__ == "__main__":
         action="store_true",
         help="If should use GPU for training. Remember that xgboost-gpu version is needed for this.",
     )
+    parser.add_argument('--nworkers', type=int, default=1, help='Max number of workers for ThreadPoolExecutor which reads Root tree with data.')
     graphs_group = parser.add_mutually_exclusive_group()
     graphs_group.add_argument(
         "--printplots",
@@ -104,6 +105,7 @@ if __name__ == "__main__":
     anti_particles = args.antiparticles
     optimize_hyper_params = args.hyperparams
     use_gpu = args.gpu
+    n_workers = args.nworkers
     create_plots = args.printplots or args.saveplots or False
     save_plots = args.saveplots
     if anti_particles:
@@ -117,7 +119,7 @@ if __name__ == "__main__":
     loader = LoadData(
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
-    tree_handler = loader.load_tree()
+    tree_handler = loader.load_tree(max_workers=n_workers)
     # TODO fix the data, here we narrow sigma selection for protons
     if upper_p_cut <= 3:
         NSIGMA_PROTON = 2
@@ -138,6 +140,7 @@ if __name__ == "__main__":
     copy2(json_file_path, os.getcwd())
     # pretraining plots
     if create_plots:
+        print("Creating pre-training plots")
         plotting_tools.tof_plot(protons, json_file_name, "protons", save_fig=save_plots)
         plotting_tools.tof_plot(kaons, json_file_name, "kaons", save_fig=save_plots)
         plotting_tools.tof_plot(
@@ -153,6 +156,8 @@ if __name__ == "__main__":
     # loading model handler
     model_hdl = PrepareModel(json_file_name, optimize_hyper_params, use_gpu)
     train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
+    del protons, kaons, pions
+    gc.collect()
     features_for_train = model_hdl.load_features_for_train()
     print("\nPreparing model handler\n")
     model_hdl, study = model_hdl.prepare_model_handler(train_test_data=train_test_data)
@@ -169,11 +174,15 @@ if __name__ == "__main__":
     train.save_model(model_name)
     # shapleys graphs
     if create_plots:
+        print("Creating post-training plots")
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
+        del train_test_data[0], train_test_data[1], train_test_data[2]
+        gc.collect()
         plotting_tools.output_train_test_plot(
             train.model_hdl, train_test_data, save_fig=save_plots
         )
+
         plotting_tools.roc_plot(train_test_data[3], y_pred_test, save_fig=save_plots)
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]

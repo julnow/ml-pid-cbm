@@ -128,7 +128,7 @@ class LoadData:
 
     # load file with data into hipe4ml TreeHandler
     def load_tree(
-        self, data_file_name: str = None, tree_type: str = "plain_tree"
+        self, data_file_name: str = None, tree_type: str = "plain_tree", max_workers: int = 1,
     ) -> TreeHandler:
         """Loads tree from given file into hipe4ml TreeHandler
 
@@ -136,6 +136,8 @@ class LoadData:
             data_file_name (str, optional): name of the file with the tree. Defaults to None.
             tree_type (str, optional): type of the tree structure to be loaded.
             Defaults to "plain_tree".
+            max_workers (int, optional): number of max_workers for ThreadPoolExecutor used to load data with multithreading.\
+            Defaults to 1.
 
         Returns:
             TreeHandler: hipe4ml structure contatining tree to train and test model on
@@ -143,9 +145,9 @@ class LoadData:
 
         data_file_name = data_file_name or self.data_file_name
         tree_handler = TreeHandler()
+        preselection = self.clean_tree()
         tree_handler.get_handler_from_large_file(
-            data_file_name, tree_type, preselection=self.clean_tree()
-        )
+            data_file_name, tree_type, preselection=preselection, max_workers=max_workers)
 
         return tree_handler
 
@@ -169,17 +171,17 @@ class LoadData:
         charge_variable_name = self.__class__.load_var_name(json_file_name, "charge")
 
         for cut in quality_cuts:
-            preselection += f"{cut} & "
+            preselection += f"({cut}) and "
         # include specific momentum cut
         p_cut = self.create_cut_string(
             self.lower_p_cut, self.upper_p_cut, momemntum_variable_name
         )
-        preselection += f"{p_cut} & "
+        preselection += f"({p_cut}) and "
         # include sign of charge
         if self.anti_particles is False:
-            preselection += f"{charge_variable_name} > 0"
+            preselection += f"({charge_variable_name} > 0)"
         elif self.anti_particles is True:
-            preselection += f"{charge_variable_name} < 0"
+            preselection += f"({charge_variable_name} < 0)"
 
         return preselection
 
