@@ -190,8 +190,9 @@ if __name__ == "__main__":
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
-            train_test_data[2][features_for_train],
-            y_pred_test,
+            train_test_data[2][features_for_train][:50000],
+            y_pred_test[:50000],
             model_hdl,
             feature_names,
+            n_workers=n_workers
         )
