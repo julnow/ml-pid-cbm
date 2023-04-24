@@ -87,6 +87,9 @@ class LoadData:
                 nsigma_pion,
                 json_file_name,
             )
+        print(
+            f"Number of protons: {len(protons)}\nNumber of kaons: {len(kaons)}\nNumber of pions: {len(pions)}"
+        )
         return (protons, kaons, pions)
 
     def get_particles_type(
@@ -139,24 +142,25 @@ class LoadData:
         """
 
         data_file_name = data_file_name or self.data_file_name
-        tree_handler = TreeHandler(data_file_name, tree_type)
+        tree_handler = TreeHandler()
+        tree_handler.get_handler_from_large_file(
+            data_file_name, tree_type, preselection=self.clean_tree()
+        )
 
-        return self.clean_tree(tree_handler, self.json_file_name)
+        return tree_handler
 
-    def clean_tree(
-        self, tree_handler: TreeHandler, json_file_name: str = None
-    ) -> TreeHandler:
-        """Takes already loaded tree from TreeHandler and makes quality cuts
-            defined in the json file, and momentum cut defined in class definition
+    def clean_tree(self, json_file_name: str = None) -> str:
+        """
+        Creates string with preselections (quality cuts, momentum range and sign of charge)
 
         Args:
-            tree_handler (TreeHandler): TreeHandler contating tree to be cleaned
             json_file_name (str, optional): Name of the json file containg
-            quality cuts definition. Defaults to None.
+            quality cuts definition (if different than in class). Defaults to None.
 
         Returns:
             TreeHandler: _description_
         """
+        preselection = ""
         json_file_name = json_file_name or self.json_file_name
         quality_cuts = self.load_quality_cuts(json_file_name)
         momemntum_variable_name = self.__class__.load_var_name(
@@ -165,19 +169,19 @@ class LoadData:
         charge_variable_name = self.__class__.load_var_name(json_file_name, "charge")
 
         for cut in quality_cuts:
-            tree_handler = tree_handler.get_subset(cut)
+            preselection += f"{cut} & "
         # include specific momentum cut
         p_cut = self.create_cut_string(
             self.lower_p_cut, self.upper_p_cut, momemntum_variable_name
         )
-        tree_handler = tree_handler.get_subset(p_cut)
+        preselection += f"{p_cut} & "
         # include sign of charge
         if self.anti_particles is False:
-            tree_handler = tree_handler.get_subset(f"{charge_variable_name} > 0")
+            preselection += f"{charge_variable_name} > 0"
         elif self.anti_particles is True:
-            tree_handler = tree_handler.get_subset(f"{charge_variable_name} < 0")
+            preselection += f"{charge_variable_name} < 0"
 
-        return tree_handler
+        return preselection
 
     def load_quality_cuts(self, json_file_name: str) -> List[str]:
         """Loads quality cuts defined in json file into array of strings
@@ -227,9 +231,19 @@ class LoadData:
         """
         cut_string = f"{lower:.1f} <= {cut_name} < {upper:.1f}"
         return cut_string
-    
+
     @staticmethod
     def load_file_name(json_file_name: str, training_or_test: str):
+        """Load file names of both training and test dataset
+
+        Args:
+            json_file_name (str): Json file containg filenames.
+            training_or_test (str): Name of the dataset (e.g., "test", "training") as defined
+            in json to load the dataset filename.
+
+        Returns:
+            _type_: _description_
+        """
         with open(json_file_name, "r") as json_file:
             var_names = json.load(json_file)["file_names"]
         return var_names[training_or_test]
