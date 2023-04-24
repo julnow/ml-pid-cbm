@@ -165,8 +165,12 @@ class ValidateModel:
             if i != pid:
                 false_signal += row[pid] + cm[pid][i]
         reconstructed_signals = true_signal + false_signal
-        efficiency = true_signal / all_simulated_signal * 100  # efficency calculated as true signal/all signal
-        purity = true_signal / reconstructed_signals * 100  #purity calculated as true signal/reconstructed_signals
+        efficiency = (
+            true_signal / all_simulated_signal * 100
+        )  # efficency calculated as true signal/all signal
+        purity = (
+            true_signal / reconstructed_signals * 100
+        )  # purity calculated as true signal/reconstructed_signals
         stats = f"""
         For particle ID = {pid}: 
         Efficiency: {efficiency:.2f}%
@@ -238,6 +242,12 @@ if __name__ == "__main__":
         type=float,
         help="Probability cut value for respectively protons, kaons, and pions. E.g., 0.9 0.95 0.9",
     )
+    parser.add_argument(
+        "--nworkers",
+        type=int,
+        default=1,
+        help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
+    )
     args = parser.parse_args()
     # config  arguments to be loaded from args
     json_file_name = args.config[0]
@@ -247,19 +257,21 @@ if __name__ == "__main__":
         args.probabilitycuts[1],
         args.probabilitycuts[2],
     )
+    n_workers = args.nworkers
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
     data_file_name = LoadData.load_file_name(json_file_name, "test")
-    print(f"\nLoading data from {data_file_name}\n")
+
     loader = LoadData(data_file_name, json_file_name, lower_p, upper_p, is_anti)
-    test_particles = loader.load_tree()
     # sigma selection
     # loading model handler and applying on dataset
-    print(f"\nApplying model handler from {model_name}")
+    print(
+        f"\nLoading data from {data_file_name}\nApplying model handler from {model_name}"
+    )
     os.chdir(f"{model_name}")
     model_hdl = ModelHandler()
     model_hdl.load_model_handler(model_name)
-    test_particles.apply_model_handler(model_hdl, False)
+    test_particles = loader.load_tree(model_hdl, max_workers=n_workers)
     # validate model object
     validate = ValidateModel(
         lower_p, upper_p, is_anti, json_file_name, test_particles.get_data_frame()

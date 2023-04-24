@@ -6,6 +6,7 @@ data cleaning and preparing training and test dataset.
 import json
 from typing import Tuple, List
 from hipe4ml.tree_handler import TreeHandler
+from hipe4ml.model_handler import ModelHandler
 from particles_id import ParticlesId as Pid
 
 
@@ -128,16 +129,21 @@ class LoadData:
 
     # load file with data into hipe4ml TreeHandler
     def load_tree(
-        self, data_file_name: str = None, tree_type: str = "plain_tree", max_workers: int = 1,
+        self,
+        data_file_name: str = None,
+        tree_type: str = "plain_tree",
+        max_workers: int = 1,
+        model_handler: ModelHandler = None,
     ) -> TreeHandler:
         """Loads tree from given file into hipe4ml TreeHandler
 
         Args:
-            data_file_name (str, optional): name of the file with the tree. Defaults to None.
-            tree_type (str, optional): type of the tree structure to be loaded.
+            data_file_name (str, optional): Name of the file with the tree. Defaults to None.
+            tree_type (str, optional): Type of the tree structure to be loaded.
             Defaults to "plain_tree".
-            max_workers (int, optional): number of max_workers for ThreadPoolExecutor used to load data with multithreading.\
+            max_workers (int, optional): Number of max_workers for ThreadPoolExecutor used to load data with multithreading.\
             Defaults to 1.
+            model_handler(ModelHandler, optional): ModelHandler to apply if the dataset is validation one. Default to None.
 
         Returns:
             TreeHandler: hipe4ml structure contatining tree to train and test model on
@@ -147,7 +153,13 @@ class LoadData:
         tree_handler = TreeHandler()
         preselection = self.clean_tree()
         tree_handler.get_handler_from_large_file(
-            data_file_name, tree_type, preselection=preselection, max_workers=max_workers)
+            data_file_name,
+            tree_type,
+            preselection=preselection,
+            max_workers=max_workers,
+            model_handler=model_handler,
+            output_margin=False
+        )
 
         return tree_handler
 

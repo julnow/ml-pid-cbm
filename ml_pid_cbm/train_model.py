@@ -85,7 +85,12 @@ if __name__ == "__main__":
         action="store_true",
         help="If should use GPU for training. Remember that xgboost-gpu version is needed for this.",
     )
-    parser.add_argument('--nworkers', type=int, default=1, help='Max number of workers for ThreadPoolExecutor which reads Root tree with data.')
+    parser.add_argument(
+        "--nworkers",
+        type=int,
+        default=1,
+        help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
+    )
     graphs_group = parser.add_mutually_exclusive_group()
     graphs_group.add_argument(
         "--printplots",
@@ -177,8 +182,6 @@ if __name__ == "__main__":
         print("Creating post-training plots")
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
-        del train_test_data[0], train_test_data[1], train_test_data[2]
-        gc.collect()
         plotting_tools.output_train_test_plot(
             train.model_hdl, train_test_data, save_fig=save_plots
         )
