@@ -43,5 +43,10 @@ jobs:
         conda activate main
         conda install pytest
         pytest
+    - name: Generate coverage report
+      run: coverage xml
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV }}
+
