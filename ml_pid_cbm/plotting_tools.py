@@ -14,6 +14,7 @@ from optuna.visualization import (
     plot_optimization_history,
     plot_contour,
 )
+from optuna.study import Study
 import shap
 from load_data import LoadData
 
@@ -105,23 +106,24 @@ def correlations_plot(
             plot.savefig(f"correlations_plot_{i}.pdf")
 
 
-def opt_history_plot(study, save_fig: bool = True):
+def opt_history_plot(study: Study, save_fig: bool = True):
+    # for saving python-kaleido package is needed
     plt.rcParams["figure.figsize"] = (10, 7)
     plt.rcParams["figure.dpi"] = 300
-    plot_optimization_history(study)
+    fig = plot_optimization_history(study)
     if save_fig:
-        plt.savefig("optimization_history.png")
-        plt.savefig("optimization_history.pdf")
+        fig.write_image("optimization_history.png")
+        fig.write_image("optimization_history.pdf")
     plt.close()
 
 
-def opt_contour_plot(study, save_fig: bool = True):
+def opt_contour_plot(study: Study, save_fig: bool = True):
     plt.rcParams["figure.figsize"] = (10, 7)
     plt.rcParams["figure.dpi"] = 300
-    plot_contour(study)
+    fig = plot_contour(study)
     if save_fig:
-        plt.savefig("optimization_contour.png")
-        plt.savefig("optimization_contour.pdf")
+        fig.write_image("optimization_contour.png")
+        fig.write_image("optimization_contour.pdf")
     plt.close()
 
 
@@ -157,7 +159,6 @@ def roc_plot(
         plt.savefig("roc_plot.png")
         plt.savefig("roc_plot.pdf")
     plt.close()
-
 
 
 def plot_confusion_matrix(
@@ -209,7 +210,6 @@ def plot_confusion_matrix(
     plt.close()
 
 
-
 def plot_mass2(
     xgb_mass: Series,
     sim_mass: Series,
@@ -251,7 +251,6 @@ def plot_mass2(
         plt.savefig(f"mass2_{particles_title}.png")
         plt.savefig(f"mass2_{particles_title}.pdf")
     plt.close()
-
 
 
 def plot_all_particles_mass2(
@@ -366,7 +365,6 @@ def plot_eff_pT_rap(
     plt.close()
 
 
-
 def plot_pt_rapidity(
     df: DataFrame,
     pid: float,
@@ -415,7 +413,7 @@ def plot_shap_summary(
     y_train: DataFrame,
     model_hdl: ModelHandler,
     feature_names: List[str],
-    save_fig: bool = True
+    save_fig: bool = True,
 ):
     explainer = shap.TreeExplainer(model_hdl.get_original_model())
     shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
@@ -423,7 +421,11 @@ def plot_shap_summary(
     for i in range(num_classes):
         fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
         shap.summary_plot(
-            shap_values[i], x_train, feature_names=feature_names, plot_size=[10, 15], show=False
+            shap_values[i],
+            x_train,
+            feature_names=feature_names,
+            plot_size=[10, 15],
+            show=False,
         )
         w, h = plt.gcf().get_size_inches()
         plt.gcf().set_size_inches(h + 2, h)
@@ -436,7 +438,12 @@ def plot_shap_summary(
         ax.spines["bottom"].set_visible(True)
         ax.spines["left"].set_visible(True)
         ax.tick_params(
-            axis="both", which="major", length=10, direction="in", labelsize=15, zorder=4
+            axis="both",
+            which="major",
+            length=10,
+            direction="in",
+            labelsize=15,
+            zorder=4,
         )
         ax.minorticks_on()
         ax.tick_params(
@@ -447,4 +454,3 @@ def plot_shap_summary(
             plt.savefig(f"shap_summary_{i}.png")
             plt.savefig(f"shap_summary_{i}.pdf")
         plt.close()
-        

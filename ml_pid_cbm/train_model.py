@@ -118,7 +118,14 @@ if __name__ == "__main__":
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
     tree_handler = loader.load_tree()
-    protons, kaons, pions = loader.get_protons_kaons_pions(tree_handler)
+    # TODO fix the data, here we narrow sigma selection for protons
+    if upper_p_cut <= 3:
+        NSIGMA_PROTON = 2
+    else:
+        NSIGMA_PROTON = 3
+    protons, kaons, pions = loader.get_protons_kaons_pions(
+        tree_handler, nsigma_proton=NSIGMA_PROTON
+    )
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
     pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
     del tree_handler
@@ -159,6 +166,8 @@ if __name__ == "__main__":
     )
     train.train_model_handler(train_test_data, sample_weights)
     print("\nModel trained!")
+    train.save_model(model_name)
+    # shapleys graphs
     if create_plots:
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
@@ -174,5 +183,3 @@ if __name__ == "__main__":
             model_hdl,
             feature_names,
         )
-
-    train.save_model(model_name)

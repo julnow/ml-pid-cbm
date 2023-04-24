@@ -2,11 +2,12 @@
 This module is used for preparing the handler of the ML model.
 """
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 import xgboost as xgb
 from hipe4ml.analysis_utils import train_test_generator
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
+from optuna.study import Study
 
 
 class PrepareModel:
@@ -23,12 +24,12 @@ class PrepareModel:
         self,
         json_file_name: str = None,
         train_test_data=None,
-    ):
-        """Prepares model handler for training
+    ) -> Tuple[ModelHandler, Union[None, Study]]:
+        """
+        Prepares model handler for training
 
         Args:
-            json_file_name (str, optional): Name of json file containing list of features
-            for training and hyper_params info. Defaults to None.
+            json_file_name (str, optional): Name of json file containing list of features. Defaults to None.
             train_test_data (_type_, optional): Trainig_test_dataset using hipe4ml.train_test_generator. Only used for
             optimization of hyper params if this option is set to True. Defaults to None.
 
@@ -36,7 +37,8 @@ class PrepareModel:
             TypeError: Raises error if optimize_hyper_params is set to True, but no train_test_data was provided.
 
         Returns:
-            ModelHandler: Hipe4ml model handler ready for training.
+            Tuple[ModelHandler, Union[None, Study]]: Tuple of Hipe4ml model handler ready for training,
+            and optuna optuna.study.Study if was performed.
         """
         json_file_name = json_file_name or self.json_file_name
         features_for_train = self.load_features_for_train(json_file_name)
@@ -54,7 +56,7 @@ class PrepareModel:
                 cross_val_scoring="roc_auc_ovo",
                 timeout=120,
                 n_jobs=2,
-                n_trials=3,
+                n_trials=6,
                 direction="maximize",
             )
         elif self.optimize_hyper_params is True and train_test_data is None:

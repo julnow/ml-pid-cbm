@@ -10,4 +10,5 @@ sbatch --job-name=all \
         --output=$LOGDIR/out/%j.out.log \
         --error=$LOGDIR/error/%j.err.log \
         --array 1-4 \
+        --contstraint=v100 \
         -- $PWD/slurm_ml_pid.sh

@@ -1,6 +1,6 @@
 {"file_names":{
-  "training": "/Users/julnow/gsi/mgr/trees/PlainTree5M_DCM_trdrichrec_12agev.root",
-  "test": "/Users/julnow/gsi/mgr/trees/PlainTree2M_URQMD_trdrichrec_12agev.root"
+  "training": "/Users/julnow/gsi/mgr/trees/PlainTree1M_DCM_tof_primaries_12agev.root",
+  "test": "/Users/julnow/gsi/mgr/trees/PlainTree500k_URQMD_tof_primaries_12agev.root"
 },
   "var_names": {
     "momentum": "Complex_p",
@@ -9,9 +9,7 @@
     "pid": "Complex_pid"
   },
   "features_for_train":
-    ["Complex_pT", "Complex_mass2", 
-    "Complex_n_hits_trd", "Complex_e_loss_0", "Complex_e_loss_1", "Complex_e_loss_2", "Complex_e_loss_3"
-  , "Complex_chi2_vtx", "Complex_M"],
+    ["Complex_mass2_over_p2", "Complex_vtx_chi2", "Complex_chi2_ov_ndf_vtx"],
   "cuts": {
     "Complex_mass2": {
       "lower": -1.0,
@@ -28,16 +26,27 @@
     "Complex_eta": {
       "lower": 0.0,
       "upper": 6.0
-    }
+    },
+    "Complex_mother_id": {
+      "lower": -2,
+      "upper": 0
+    },
+    "Complex_vtx_chi2": {
+      "lower": 0,
+      "upper": 4000
+    },
+    "Complex_chi2_ov_ndf_vtx": {
+      "lower": 0,
+      "upper": 4000}
   },
   "hyper_params": { 
     "values": {
-      "n_estimators": 776,
-      "max_depth": 7,
-      "learning_rate": 0.08112714035375232,
-      "gamma": 9,
-      "subsample": 0.71582, 
-      "alpha": 17
+      "n_estimators": 670,
+      "max_depth": 5,
+      "learning_rate": 0.04281706988524796,
+      "gamma": 1,
+      "subsample": 0.6296676786626392, 
+      "alpha": 9
 
     },
     "ranges": {
