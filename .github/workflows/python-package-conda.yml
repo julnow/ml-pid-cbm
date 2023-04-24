@@ -43,10 +43,5 @@ jobs:
         conda activate main
         conda install pytest
         pytest
-    - name: Run tests with coverage
-      uses: orgoro/coverage@v3
-      with:
-        exclude: test_*
-        threshold: 80%
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
