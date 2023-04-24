@@ -255,7 +255,7 @@ if __name__ == "__main__":
     test_particles = loader.load_tree()
     # sigma selection
     # loading model handler and applying on dataset
-    print(f"\nLoading model handler from {model_name}")
+    print(f"\nApplying model handler from {model_name}")
     os.chdir(f"{model_name}")
     model_hdl = ModelHandler()
     model_hdl.load_model_handler(model_name)
