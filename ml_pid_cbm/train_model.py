@@ -1,5 +1,7 @@
 import os
 import gc
+import sys
+from typing import List
 import argparse
 from shutil import copy2
 from hipe4ml.model_handler import ModelHandler
@@ -48,9 +50,16 @@ class TrainModel:
         print(f"\nModel saved as {model_name}")
 
 
-# main method of the training
-if __name__ == "__main__":
-    # parser for main class
+def parse_args(args: List[str]) -> argparse.Namespace:
+    """
+    Arguments parser for the main method.
+
+    Args:
+        args (List[str]): Arguments from the command line, should be sys.argv[1:].
+
+    Returns:
+        argparse.Namespace: argparse.Namespace containg args
+    """
     parser = argparse.ArgumentParser(
         prog="ML_PID_CBM TrainModel", description="Program for training PID ML models"
     )
@@ -103,7 +112,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Creates plots and saves them to file, without printing.",
     )
-    args = parser.parse_args()
+    return parser.parse_args(args)
+
+
+# main method of the training
+if __name__ == "__main__":
+    # parser for main class
+    args = parse_args(sys.argv[1:])
     # config  arguments to be loaded from args
     json_file_name = args.config[0]
     lower_p_cut, upper_p_cut = args.momentum[0], args.momentum[1]
@@ -190,9 +205,5 @@ if __name__ == "__main__":
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
-            train_test_data[2][features_for_train][:50000],
-            y_pred_test[:50000],
-            model_hdl,
-            feature_names,
-            n_workers=n_workers
+            train_test_data[2][features_for_train], y_pred_test, model_hdl
         )
