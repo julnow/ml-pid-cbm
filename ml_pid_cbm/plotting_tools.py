@@ -8,7 +8,13 @@ from matplotlib import rcParams
 from pandas import DataFrame
 from pandas import Series
 import numpy as np
-from hipe4ml.plot_utils import plot_distr, plot_corr, plot_output_train_test, plot_roc
+from hipe4ml.plot_utils import (
+    plot_distr,
+    plot_corr,
+    plot_output_train_test,
+    plot_roc,
+    plot_feature_imp,
+)
 from hipe4ml.tree_handler import TreeHandler
 from hipe4ml.model_handler import ModelHandler
 from optuna.visualization import (
@@ -16,8 +22,18 @@ from optuna.visualization import (
     plot_contour,
 )
 from optuna.study import Study
-import shap
 from load_data import LoadData
+
+PARAMS = {
+        "axes.titlesize": "22",
+        "axes.labelsize": "22",
+        "xtick.labelsize": "22",
+        "ytick.labelsize": "22",
+        "figure.figsize": "10, 7",
+        "figure.dpi" : "300",
+        "legend.fontsize": "20"
+    }
+rcParams.update(PARAMS)
 
 
 def tof_plot(
@@ -54,6 +70,8 @@ def tof_plot(
         file_name = particles_title.replace(" ", "_")
         plt.savefig(f"{file_name}.png")
         plt.savefig(f"{file_name}.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -63,16 +81,6 @@ def var_distributions_plot(
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
-    params = {
-        "axes.titlesize": "22",
-        "axes.labelsize": "22",
-        "xtick.labelsize": "22",
-        "ytick.labelsize": "22",
-    }
-    rcParams.update(params)
-    plt.rcParams["figure.figsize"] = (10, 7)
-    plt.rcParams["figure.dpi"] = 300
-
     plot_distr(
         data_list,
         vars_to_draw,
@@ -86,6 +94,8 @@ def var_distributions_plot(
     if save_fig:
         plt.savefig("vars_disitributions.png")
         plt.savefig("vars_disitributions.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -95,8 +105,6 @@ def correlations_plot(
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
-    plt.rcParams["figure.figsize"] = (10, 7)
-    plt.rcParams["figure.dpi"] = 300
     plt.subplots_adjust(
         left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55
     )
@@ -109,22 +117,22 @@ def correlations_plot(
 
 def opt_history_plot(study: Study, save_fig: bool = True):
     # for saving python-kaleido package is needed
-    plt.rcParams["figure.figsize"] = (10, 7)
-    plt.rcParams["figure.dpi"] = 300
     fig = plot_optimization_history(study)
     if save_fig:
         fig.write_image("optimization_history.png")
         fig.write_image("optimization_history.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
 def opt_contour_plot(study: Study, save_fig: bool = True):
-    plt.rcParams["figure.figsize"] = (10, 7)
-    plt.rcParams["figure.dpi"] = 300
     fig = plot_contour(study)
     if save_fig:
         fig.write_image("optimization_contour.png")
         fig.write_image("optimization_contour.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -134,9 +142,6 @@ def output_train_test_plot(
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
-    plt.rcParams["figure.figsize"] = (10, 7)
-    plt.rcParams["figure.dpi"] = 300
-
     ml_out_fig = plot_output_train_test(
         model_hdl, train_test_data, 100, False, leg_labels, True, density=True
     )
@@ -144,6 +149,8 @@ def output_train_test_plot(
         for idx, fig in enumerate(ml_out_fig):
             fig.savefig(f"output_train_test_plot_{idx}.png")
             fig.savefig(f"output_train_test_plot_{idx}.pdf")
+        else:
+            fig.show()
     plt.close()
 
 
@@ -153,12 +160,12 @@ def roc_plot(
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
-    plt.rcParams["figure.figsize"] = (10, 7)
-    plt.rcParams["figure.dpi"] = 300
     plot_roc(test_df, test_labels_array, None, leg_labels, multi_class_opt="ovo")
     if save_fig:
         plt.savefig("roc_plot.png")
         plt.savefig("roc_plot.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -208,6 +215,8 @@ def plot_confusion_matrix(
     if save_fig:
         plt.savefig(f"{filename}.png")
         plt.savefig(f"{filename}.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -234,7 +243,6 @@ def plot_mass2(
     # axs[0].grid()
     axs.legend(
         ("XGBoost selected " + particles_title, "all simulated " + particles_title),
-        fontsize=15,
         loc="upper right",
     )
     if y_axis_log:
@@ -251,6 +259,8 @@ def plot_mass2(
     if save_fig:
         plt.savefig(f"mass2_{particles_title}.png")
         plt.savefig(f"mass2_{particles_title}.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -296,23 +306,23 @@ def plot_all_particles_mass2(
             "XGBoost selected true kaons",
             "XGBoost selected true pions",
         ),
-        fontsize=15,
         loc="upper right",
     )
     if y_axis_log:
         axs.set_yscale("log")
-    # plt.rcParams["legend.loc"] = 'upper right'
     title = f"ALL XGBoost selected (true and false positive) {particles_title} $mass^2$ histogram"
     yName = r"Counts"
     xName = r"$m^2$ $(GeV/c^2)^2$"
-    plt.xlabel(xName, fontsize=20, loc="right")
-    plt.ylabel(yName, fontsize=20, loc="top")
-    axs.set_title(title, fontsize=20)
+    plt.xlabel(xName, loc="right")
+    plt.ylabel(yName, loc="top")
+    axs.set_title(title)
     axs.grid()
     axs.tick_params(axis="both", which="major", labelsize=18)
     if save_fig:
         plt.savefig(f"mass2_all_selected_{particles_title}.png")
         plt.savefig(f"mass2_all_selected_{particles_title}.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -337,8 +347,7 @@ def plot_eff_pT_rap(
 
     fig = plt.figure(figsize=(8, 10), dpi=300)
     plt.title(
-        f"$p_T$-rapidity efficiency for all selected for pid = {pid}",
-        fontsize=16,
+        f"$p_T$-rapidity efficiency for all selected for pid = {pid}"
     )
     true, yedges, xedges = np.histogram2d(x, y, bins=nbins, range=ranges)
     reco, _, _ = np.histogram2d(xe, ye, bins=(yedges, xedges), range=ranges)
@@ -357,12 +366,14 @@ def plot_eff_pT_rap(
     cbar = fig.colorbar(img, fraction=0.025, pad=0.08)  # above plot H
     cbar.set_label("efficiency (selected/simulated)", rotation=270, labelpad=20)
 
-    plt.xlabel("rapidity", fontsize=18)
-    plt.ylabel("$p_T$ (GeV/c)", fontsize=18)
+    plt.xlabel("rapidity")
+    plt.ylabel("$p_T$ (GeV/c)")
     plt.tight_layout()
     if save_fig:
         plt.savefig(f"plot_eff_pT_rap_ID={pid}.png")
         plt.savefig(f"plot_eff_pT_rap_ID={pid}.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -383,8 +394,7 @@ def plot_pt_rapidity(
 
     fig = plt.figure(figsize=(8, 10), dpi=300)
     plt.title(
-        f"$p_T$-rapidity graph for all simulated pid = {pid}",
-        fontsize=16,
+        f"$p_T$-rapidity graph for all simulated pid = {pid}"
     )
 
     true, yedges, xedges = np.histogram2d(x, y, bins=nbins, range=ranges)
@@ -400,12 +410,14 @@ def plot_pt_rapidity(
     cbar = fig.colorbar(img, fraction=0.025, pad=0.08)  # above plot H
     cbar.set_label("counts", rotation=270, labelpad=20)
 
-    plt.xlabel("rapidity", fontsize=18)
-    plt.ylabel("$p_T$ (GeV/c)", fontsize=18)
+    plt.xlabel("rapidity")
+    plt.ylabel("$p_T$ (GeV/c)")
     plt.tight_layout()
     if save_fig:
         plt.savefig(f"plot_pt_rapidity_ID={pid}.png")
         plt.savefig(f"plot_pt_rapidity_ID={pid}.pdf")
+    else:
+        plt.show()
     plt.close()
 
 
@@ -413,54 +425,19 @@ def plot_shap_summary(
     x_train: DataFrame,
     y_train: DataFrame,
     model_hdl: ModelHandler,
-    feature_names: List[str],
+    n_sample: int = 10000,
     save_fig: bool = True,
-    n_workers: int = 1,
+    labels: List[str] = ["protons", "kaons", "pions"],
+    approximate: bool = True,
 ):
-    explainer = shap.TreeExplainer(model_hdl.get_original_model())
-    shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
-    num_classes = len(shap_values)  # get the number of classes
-
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-        for i in range(num_classes):
-            executor.submit(
-                plot_shap_class, i, shap_values[i], x_train, feature_names, save_fig
-            )
-
-
-def plot_shap_class(i, shap_values_i, x_train, feature_names, save_fig):
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-    shap.summary_plot(
-        shap_values_i,
-        x_train,
-        feature_names=feature_names,
-        plot_size=[10, 15],
-        show=False,
+    shap_plots = plot_feature_imp(
+        x_train, y_train, model_hdl, labels, n_sample, approximate
     )
-    w, h = plt.gcf().get_size_inches()
-    plt.gcf().set_size_inches(h + 2, h)
-    plt.gcf().set_size_inches(w, w * 3 / 4)
-    plt.gcf().axes[-1].set_aspect("auto")
-    plt.gcf().axes[-1].set_box_aspect(50)
-    plt.xlabel(f"SHAP values for class {i}", fontsize=18)
-    ax.spines["top"].set_visible(True)
-    ax.spines["right"].set_visible(True)
-    ax.spines["bottom"].set_visible(True)
-    ax.spines["left"].set_visible(True)
-    ax.tick_params(
-        axis="both",
-        which="major",
-        length=10,
-        direction="in",
-        labelsize=15,
-        zorder=4,
-    )
-    ax.minorticks_on()
-    ax.tick_params(
-        axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
-    )
-    fig.tight_layout()
-    if save_fig:
-        plt.savefig(f"shap_summary_{i}.png")
-        plt.savefig(f"shap_summary_{i}.pdf")
-    plt.close()
+    for i, shap_plot in enumerate(shap_plots):
+        shap_plot.tight_layout()
+        if save_fig:
+            shap_plot.savefig(f"shap_plot_{i}.png")
+            shap_plot.savefig(f"shap_plot_{i}.pdf")
+        else:
+            shap_plot.show()
+        shap_plot.close()
