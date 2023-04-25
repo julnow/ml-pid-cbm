@@ -130,10 +130,10 @@ if __name__ == "__main__":
         NSIGMA_PROTON = 2
     else:
         NSIGMA_PROTON = 3
-    protons, kaons, pions = loader.get_protons_kaons_pions(
+    protons, pions = loader.get_protons_pions(
         tree_handler, nsigma_proton=NSIGMA_PROTON
     )
-    print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
+    print(f"\nProtons, and pions loaded using file {data_file_name}\n")
     pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
     del tree_handler
     gc.collect()
@@ -147,21 +147,20 @@ if __name__ == "__main__":
     if create_plots:
         print("Creating pre-training plots")
         plotting_tools.tof_plot(protons, json_file_name, "protons", save_fig=save_plots)
-        plotting_tools.tof_plot(kaons, json_file_name, "kaons", save_fig=save_plots)
         plotting_tools.tof_plot(
             pions, json_file_name, "pions, muons, electrons", save_fig=save_plots
         )
         vars_to_draw = protons.get_var_names()
         plotting_tools.var_distributions_plot(
-            vars_to_draw, [protons, kaons, pions], save_fig=save_plots
+            vars_to_draw, [protons, pions], save_fig=save_plots
         )
         plotting_tools.correlations_plot(
-            vars_to_draw, [protons, kaons, pions], save_fig=save_plots
+            vars_to_draw, [protons, pions], save_fig=save_plots
         )
     # loading model handler
     model_hdl = PrepareModel(json_file_name, optimize_hyper_params, use_gpu)
-    train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
-    del protons, kaons, pions
+    train_test_data = model_hdl.prepare_train_test_data(protons, pions)
+    del protons, pions
     gc.collect()
     features_for_train = model_hdl.load_features_for_train()
     print("\nPreparing model handler\n")
@@ -193,6 +192,5 @@ if __name__ == "__main__":
             train_test_data[2][features_for_train][:50000],
             y_pred_test[:50000],
             model_hdl,
-            feature_names,
-            n_workers=n_workers
+            feature_names
         )

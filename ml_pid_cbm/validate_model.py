@@ -32,26 +32,24 @@ class ValidateModel:
         self.json_file_name = json_file_name
         self.particles_df = particles_df
 
-    def xgb_preds(self, proba_proton: float, proba_kaon: float, proba_pion: float):
+    def xgb_preds(self, proba_proton: float, proba_pion: float):
         """Gets particle type as selected by xgboost model if above probability threshold.
 
         Args:
             proba_proton (float): Probablity threshold to classify particle as proton.
-            proba_kaon (float): Probablity threshold to classify particle as kaon.
             proba_pion (float): Probablity threshold to classify particle as pion.
         """
         df = self.particles_df
         df["xgb_preds"] = (
-            df[["model_output_0", "model_output_1", "model_output_2"]]
+            df[["model_output_0", "model_output_1"]]
             .idxmax(axis=1)
             .map(lambda x: x.lstrip("model_output_"))
             .astype(int)
         )
         # setting to bckgr if smaller than probability threshold
         proton = (df["xgb_preds"] == 0) & (df["model_output_0"] > proba_proton)
-        pion = (df["xgb_preds"] == 1) & (df["model_output_1"] > proba_kaon)
-        kaon = (df["xgb_preds"] == 2) & (df["model_output_2"] > proba_pion)
-        df.loc[~(proton | pion | kaon), "xgb_preds"] = 3
+        pion = (df["xgb_preds"] == 1) & (df["model_output_1"] > proba_pion)
+        df.loc[~(proton | pion ), "xgb_preds"] = 3
 
         self.particles_df = df
 
@@ -68,13 +66,12 @@ class ValidateModel:
                 df[pid_variable_name]
                 .map(
                     defaultdict(
-                        lambda: 3.0,
+                        lambda: 2.0,
                         {
                             Pid.ANTI_PROTON.value: 0.0,
-                            Pid.NEG_KAON.value: 1.0,
-                            Pid.NEG_PION.value: 2.0,
-                            Pid.ELECTRON.value: 2.0,
-                            Pid.NEG_MUON.value: 2.0,
+                            Pid.NEG_PION.value: 1.0,
+                            Pid.ELECTRON.value: 1.0,
+                            Pid.NEG_MUON.value: 1.0,
                         },
                     ),
                     na_action="ignore",
@@ -86,13 +83,12 @@ class ValidateModel:
                 df[pid_variable_name]
                 .map(
                     defaultdict(
-                        lambda: 3.0,
+                        lambda: 2.0,
                         {
                             Pid.PROTON.value: 0.0,
-                            Pid.POS_KAON.value: 1.0,
-                            Pid.POS_PION.value: 2.0,
-                            Pid.POSITRON.value: 2.0,
-                            Pid.POS_MUON.value: 2.0,
+                            Pid.POS_PION.value: 1.0,
+                            Pid.POSITRON.value: 1.0,
+                            Pid.POS_MUON.value: 1.0,
                         },
                     ),
                     na_action="ignore",
@@ -237,10 +233,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--probabilitycuts",
         "-p",
-        nargs=3,
+        nargs=2,
         required=True,
         type=float,
-        help="Probability cut value for respectively protons, kaons, and pions. E.g., 0.9 0.95 0.9",
+        help="Probability cut value for respectively protons, and pions. E.g., 0.9 0.8",
     )
     parser.add_argument(
         "--nworkers",
@@ -252,10 +248,9 @@ if __name__ == "__main__":
     # config  arguments to be loaded from args
     json_file_name = args.config[0]
     model_name = args.modelname[0]
-    proba_proton, proba_kaon, proba_pion = (
+    proba_proton, proba_pion = (
         args.probabilitycuts[0],
         args.probabilitycuts[1],
-        args.probabilitycuts[2],
     )
     n_workers = args.nworkers
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
@@ -278,13 +273,13 @@ if __name__ == "__main__":
     )
     # apply probabilty cuts
     print(
-        f"\nApplying probability cuts.\nFor protons: {proba_proton}\nFor kaons: {proba_kaon}\nFor pions: {proba_pion}"
+        f"\nApplying probability cuts.\nFor protons: {proba_proton}\nFor pions: {proba_pion}"
     )
-    validate.xgb_preds(proba_proton, proba_kaon, proba_pion)
+    validate.xgb_preds(proba_proton, proba_pion)
     # remap Pid to match output XGBoost format
     validate.remap_names()
     # sigma selection for each particle type
-    for pid in range(0, 3):
+    for pid in range(0, 2):
         validate.sigma_selection(pid, 4)
     # graphs
     # confusion matrix
@@ -307,18 +302,14 @@ if __name__ == "__main__":
         json_file_name,
         "protons (all simulated)",
     )
+    
     plotting_tools.tof_plot(
         validate.particles_df[validate.particles_df[pid_variable_name] == 1],
-        json_file_name,
-        "kaons (all simulated)",
-    )
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable_name] == 2],
         json_file_name,
         "pions, muons, electrons (all simulated)",
     )
     plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable_name] == 3],
+        validate.particles_df[validate.particles_df[pid_variable_name] == 2],
         json_file_name,
         "bckgr (all simulated)",
     )
@@ -331,18 +322,13 @@ if __name__ == "__main__":
     plotting_tools.tof_plot(
         validate.particles_df[validate.particles_df["xgb_preds"] == 1],
         json_file_name,
-        "kaons (XGB-selected)",
+        "pions, muons, electrons (XGB-selected)",
     )
     plotting_tools.tof_plot(
         validate.particles_df[validate.particles_df["xgb_preds"] == 2],
         json_file_name,
-        "pions, muons, electrons (XGB-selected)",
+        "bckgr (XGB-selected)"
     )
-    # plotting_tools.tof_plot(
-    #     validate.particles_df[validate.particles_df["xgb_preds"] == 3],
-    #     json_file_name,
-    #     "bckgr (XGB-selected)"
-    # )
     # mass2 plots
     mass2_variable_name = LoadData.load_var_name(json_file_name, "mass2")
     plotting_tools.plot_mass2(
@@ -369,15 +355,15 @@ if __name__ == "__main__":
         validate.particles_df[validate.particles_df[pid_variable_name] == 1][
             mass2_variable_name
         ],
-        "Kaons",
-        (-0.1, 0.4),
+        "Pions (& electrons, muons)",
+        (-0.15, 0.15),
     )
     plotting_tools.plot_all_particles_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 1],
         mass2_variable_name,
         pid_variable_name,
-        "Kaons",
-        (-0.1, 0.4),
+        "Pions (& electrons, muons)",
+        (-0.15, 0.15),
     )
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 2][
@@ -386,35 +372,18 @@ if __name__ == "__main__":
         validate.particles_df[validate.particles_df[pid_variable_name] == 2][
             mass2_variable_name
         ],
-        "Pions (& electrons, muons)",
+        "Background",
         (-0.15, 0.15),
     )
     plotting_tools.plot_all_particles_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 2],
         mass2_variable_name,
         pid_variable_name,
-        "Pions (& electrons, muons)",
-        (-0.15, 0.15),
-    )
-    plotting_tools.plot_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 3][
-            mass2_variable_name
-        ],
-        validate.particles_df[validate.particles_df[pid_variable_name] == 3][
-            mass2_variable_name
-        ],
-        "Background",
-        (-0.15, 0.15),
-    )
-    plotting_tools.plot_all_particles_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 3],
-        mass2_variable_name,
-        pid_variable_name,
         "Background",
         (-0.15, 0.15),
     )
     # pt-rapidity plots
-    for i in range(3):
+    for i in range(2):
         plotting_tools.plot_eff_pT_rap(validate.particles_df, i)
         plotting_tools.plot_pt_rapidity(validate.particles_df, i)
     # save df

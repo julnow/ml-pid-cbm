@@ -133,7 +133,6 @@ class PrepareModel:
     @staticmethod
     def prepare_train_test_data(
         protons_th: TreeHandler,
-        kaons_th: TreeHandler,
         pions_th: TreeHandler,
         test_size: float = 0.2,
     ):
@@ -141,7 +140,6 @@ class PrepareModel:
 
         Args:
             protons_th (TreeHandler): TreeHandler containg protons.
-            kaons_th (TreeHandler): TreeHandler containg kaons.
             pions_th (TreeHandler): TreeHandler containg pions.
             test_size(float, optional): Size of created test dataset. Defaults to 0.1.
 
@@ -150,6 +148,6 @@ class PrepareModel:
             training label array, test set dataframe, test label array.
         """
         train_test_data = train_test_generator(
-            [protons_th, kaons_th, pions_th], [0, 1, 2], test_size=test_size
+            [protons_th, pions_th], [0, 1], test_size=test_size
         )
         return train_test_data

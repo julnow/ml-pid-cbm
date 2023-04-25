@@ -182,7 +182,7 @@ class TestLoadData(unittest.TestCase):
         tree_handler = TreeHandler()
         tree_handler.set_data_frame(pd.DataFrame(complete_data))
         with patch("builtins.open", mock_open(read_data=json_data)):
-            protons, kaons, pions = self.loader_pos.get_protons_kaons_pions(
+            protons, pions = self.loader_pos.get_protons_pions(
                 tree_handler
             )
             # check if each particle type was loaded correctly
@@ -191,27 +191,18 @@ class TestLoadData(unittest.TestCase):
                 pd.DataFrame([proton_entry]).reset_index(drop=True),
             )
             pd.testing.assert_frame_equal(
-                kaons.get_data_frame().reset_index(drop=True),
-                pd.DataFrame([kaon_entry]).reset_index(drop=True),
-            )
-            pd.testing.assert_frame_equal(
                 pions.get_data_frame().reset_index(drop=True),
                 pd.DataFrame([pion_entry]).reset_index(drop=True),
             )
             # repeat for antiparticles
             (
                 anti_protons,
-                anti_kaons,
                 anti_pions,
-            ) = self.loader_anti.get_protons_kaons_pions(tree_handler)
+            ) = self.loader_anti.get_protons_pions(tree_handler)
             # check if each particle type was loaded correctly
             pd.testing.assert_frame_equal(
                 anti_protons.get_data_frame().reset_index(drop=True),
                 pd.DataFrame([anti_proton_entry]).reset_index(drop=True),
-            )
-            pd.testing.assert_frame_equal(
-                anti_kaons.get_data_frame().reset_index(drop=True),
-                pd.DataFrame([anti_kaon_entry]).reset_index(drop=True),
             )
             pd.testing.assert_frame_equal(
                 anti_pions.get_data_frame().reset_index(drop=True),

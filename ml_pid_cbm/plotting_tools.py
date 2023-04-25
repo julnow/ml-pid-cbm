@@ -60,7 +60,7 @@ def tof_plot(
 def var_distributions_plot(
     vars_to_draw: list,
     data_list: List[TreeHandler],
-    leg_labels: List[str] = ["protons", "kaons", "pions"],
+    leg_labels: List[str] = ["protons", "pions"],
     save_fig: bool = True,
 ):
     params = {
@@ -92,7 +92,7 @@ def var_distributions_plot(
 def correlations_plot(
     vars_to_draw: list,
     data_list: List[TreeHandler],
-    leg_labels: List[str] = ["protons", "kaons", "pions"],
+    leg_labels: List[str] = ["protons", "pions"],
     save_fig: bool = True,
 ):
     plt.rcParams["figure.figsize"] = (10, 7)
@@ -131,7 +131,7 @@ def opt_contour_plot(study: Study, save_fig: bool = True):
 def output_train_test_plot(
     model_hdl: ModelHandler,
     train_test_data,
-    leg_labels: List[str] = ["protons", "kaons", "pions"],
+    leg_labels: List[str] = ["protons", "pions"],
     save_fig: bool = True,
 ):
     plt.rcParams["figure.figsize"] = (10, 7)
@@ -150,7 +150,7 @@ def output_train_test_plot(
 def roc_plot(
     test_df: DataFrame,
     test_labels_array,
-    leg_labels: List[str] = ["protons", "kaons", "pions"],
+    leg_labels: List[str] = ["protons", "pions"],
     save_fig: bool = True,
 ):
     plt.rcParams["figure.figsize"] = (10, 7)
@@ -164,7 +164,7 @@ def roc_plot(
 
 def plot_confusion_matrix(
     cm,
-    classes=["proton", "kaon", "pion", "bckgr"],
+    classes=["proton", "pion", "bckgr"],
     normalize=False,
     title="Confusion matrix",
     cmap=cm.get_cmap("Blues"),
@@ -270,18 +270,12 @@ def plot_all_particles_mass2(
     selected_protons = xgb_selected[xgb_selected[pid_variable_name] == 0][
         mass2_variable_name
     ]
-    selected_kaons = xgb_selected[xgb_selected[pid_variable_name] == 1][
-        mass2_variable_name
-    ]
-    selected_pions = xgb_selected[xgb_selected[pid_variable_name] == 2][
+    selected_pions = xgb_selected[xgb_selected[pid_variable_name] == 1][
         mass2_variable_name
     ]
 
     ns, bins, patches = axs.hist(
         selected_protons, bins=300, facecolor="blue", alpha=0.4, range=range1
-    )
-    ns, bins, patches = axs.hist(
-        selected_kaons, bins=300, facecolor="orange", alpha=0.4, range=range1
     )
     ns, bins, patches = axs.hist(
         selected_pions, bins=300, facecolor="green", alpha=0.4, range=range1
@@ -293,7 +287,6 @@ def plot_all_particles_mass2(
     axs.legend(
         (
             f"XGBoost selected true protons",
-            "XGBoost selected true kaons",
             "XGBoost selected true pions",
         ),
         fontsize=15,
@@ -414,18 +407,16 @@ def plot_shap_summary(
     y_train: DataFrame,
     model_hdl: ModelHandler,
     feature_names: List[str],
-    save_fig: bool = True,
-    n_workers: int = 1,
+    save_fig: bool = True
 ):
     explainer = shap.TreeExplainer(model_hdl.get_original_model())
     shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
     num_classes = len(shap_values)  # get the number of classes
 
-    with ThreadPoolExecutor(max_workers=n_workers) as executor:
-        for i in range(num_classes):
-            executor.submit(
-                plot_shap_class, i, shap_values[i], x_train, feature_names, save_fig
-            )
+    for i in range(num_classes):
+        plot_shap_class(
+            i, shap_values[i], x_train, feature_names=feature_names, save_fig=save_fig
+        )
 
 
 def plot_shap_class(i, shap_values_i, x_train, feature_names, save_fig):
