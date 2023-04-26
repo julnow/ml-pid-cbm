@@ -41,7 +41,7 @@ class PrepareModel:
             and optuna optuna.study.Study if was performed.
         """
         json_file_name = json_file_name or self.json_file_name
-        features_for_train = self.load_features_for_train(json_file_name)
+        features_for_train = self.__class__.load_features_for_train(json_file_name)
         if self.use_gpu:
             tree_method = "gpu_hist"
         else:
@@ -116,7 +116,8 @@ class PrepareModel:
         learning_rate = hyper_params_vals["learning_rate"]
         return (n_estimators, max_depth, learning_rate)
 
-    def load_features_for_train(self, json_file_name: str = None) -> List[str]:
+    @staticmethod
+    def load_features_for_train(json_file_name: str = None) -> List[str]:
         """Load names of variables for training from json file.
 
         Args:
@@ -125,7 +126,6 @@ class PrepareModel:
         Returns:
             List[str]: List of variables for training.
         """
-        json_file_name = json_file_name or self.json_file_name
         with open(json_file_name, "r") as json_file:
             features_for_train = json.load(json_file)["features_for_train"]
         return features_for_train
