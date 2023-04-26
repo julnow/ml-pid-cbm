@@ -1,6 +1,5 @@
 from typing import List
 import itertools
-from concurrent.futures import ThreadPoolExecutor
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import matplotlib.cm as cm
@@ -25,14 +24,14 @@ from optuna.study import Study
 from load_data import LoadData
 
 PARAMS = {
-        "axes.titlesize": "22",
-        "axes.labelsize": "22",
-        "xtick.labelsize": "22",
-        "ytick.labelsize": "22",
-        "figure.figsize": "10, 7",
-        "figure.dpi" : "300",
-        "legend.fontsize": "20"
-    }
+    "axes.titlesize": "22",
+    "axes.labelsize": "22",
+    "xtick.labelsize": "22",
+    "ytick.labelsize": "22",
+    "figure.figsize": "10, 7",
+    "figure.dpi": "300",
+    "legend.fontsize": "20",
+}
 rcParams.update(PARAMS)
 
 
@@ -113,6 +112,7 @@ def correlations_plot(
         if save_fig:
             plot.savefig(f"correlations_plot_{i}.png")
             plot.savefig(f"correlations_plot_{i}.pdf")
+    plt.close()
 
 
 def opt_history_plot(study: Study, save_fig: bool = True):
@@ -122,7 +122,7 @@ def opt_history_plot(study: Study, save_fig: bool = True):
         fig.write_image("optimization_history.png")
         fig.write_image("optimization_history.pdf")
     else:
-        plt.show()
+        fig.show()
     plt.close()
 
 
@@ -145,8 +145,9 @@ def output_train_test_plot(
     ml_out_fig = plot_output_train_test(
         model_hdl, train_test_data, 100, False, leg_labels, True, density=True
     )
-    if save_fig:
-        for idx, fig in enumerate(ml_out_fig):
+
+    for idx, fig in enumerate(ml_out_fig):
+        if save_fig:
             fig.savefig(f"output_train_test_plot_{idx}.png")
             fig.savefig(f"output_train_test_plot_{idx}.pdf")
         else:
@@ -346,9 +347,7 @@ def plot_eff_pT_rap(
     ye = np.array(df_reco[pT_var_name])
 
     fig = plt.figure(figsize=(8, 10), dpi=300)
-    plt.title(
-        f"$p_T$-rapidity efficiency for all selected for pid = {pid}"
-    )
+    plt.title(f"$p_T$-rapidity efficiency for all selected for pid = {pid}")
     true, yedges, xedges = np.histogram2d(x, y, bins=nbins, range=ranges)
     reco, _, _ = np.histogram2d(xe, ye, bins=(yedges, xedges), range=ranges)
 
@@ -393,9 +392,7 @@ def plot_pt_rapidity(
     y = np.array(df_true[pT_var_name])
 
     fig = plt.figure(figsize=(8, 10), dpi=300)
-    plt.title(
-        f"$p_T$-rapidity graph for all simulated pid = {pid}"
-    )
+    plt.title(f"$p_T$-rapidity graph for all simulated pid = {pid}")
 
     true, yedges, xedges = np.histogram2d(x, y, bins=nbins, range=ranges)
     true[true == 0] = np.nan  # show zeros as white
@@ -425,19 +422,105 @@ def plot_shap_summary(
     x_train: DataFrame,
     y_train: DataFrame,
     model_hdl: ModelHandler,
-    n_sample: int = 10000,
+    n_sample: int = 5000,
     save_fig: bool = True,
     labels: List[str] = ["protons", "kaons", "pions"],
-    approximate: bool = True,
+    approximate: bool = False,
 ):
+    print("Creating shapley plots...")
     shap_plots = plot_feature_imp(
         x_train, y_train, model_hdl, labels, n_sample, approximate
     )
+    plt.tight_layout()
     for i, shap_plot in enumerate(shap_plots):
-        shap_plot.tight_layout()
+        print(i)
         if save_fig:
             shap_plot.savefig(f"shap_plot_{i}.png")
             shap_plot.savefig(f"shap_plot_{i}.pdf")
         else:
             shap_plot.show()
         shap_plot.close()
+
+
+def plot_before_after_variables(
+    df: DataFrame,
+    pid: float,
+    pid_variable_name: str,
+    training_variables: List[str],
+    save_fig: bool = True,
+    log_yscale: bool = True,
+):
+    df_true = df[(df[pid_variable_name] == pid)]  # simulated
+    df_reco = df[(df["xgb_preds"] == pid)]  # reconstructed by xgboost
+
+    def variable_plot(
+        df_true,
+        df_reco,
+        variable_name: str,
+        log_yscale: bool = True,
+        leg1="Simulated",
+        leg2="XGB-selected",
+        bins=100,
+    ):
+        fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
+        ax.hist(
+            df_true[variable_name],
+            bins=bins,
+            facecolor="blue",
+            alpha=0.6,
+            histtype="step",
+            fill=False,
+            linewidth=2,
+        )
+        ax.hist(
+            df_reco[variable_name],
+            bins=bins,
+            facecolor="red",
+            alpha=0.7,
+            histtype="step",
+            fill=False,
+            linewidth=2,
+        )
+        ax.grid()
+        ax.set_xlabel(variable_name, fontsize=15, loc="right")
+        ax.set_ylim(bottom=1)
+        ax.set_ylabel("counts", fontsize=15)
+        if log_yscale:
+            ax.set_yscale("log")
+        ax.legend((leg1, leg2), fontsize=15, loc="upper right")
+        ax.set_title(f"{variable_name} before and after XGB selection", fontsize=15)
+        return fig
+
+    for training_variable in training_variables:
+        plot = variable_plot(df_true, df_reco, training_variable, log_yscale)
+        if save_fig:
+            plot.savefig(f"{training_variable}_before_after_pid_{pid}.png")
+            plot.savefig(f"{training_variable}_before_after.pdf")
+        else:
+            plot.show()
+        plt.close()
+
+
+def plot_efficiency_purity(
+    probas: np.ndarray,
+    efficiencies: List[List[float]],
+    purities: List[List[float]],
+    save_fig: bool = True
+):
+    for i, (eff, pur) in enumerate(zip(efficiencies, purities)):
+        fig, ax = plt.subplots(figsize=(10, 7), dpi=300)
+        ax.plot(probas, eff, label="efficiency")
+        ax.plot(probas, pur, label="purity")
+        ax.set_xlabel("BDT cut")
+        ax.set_ylabel("\% ")
+        ax.legend(loc='upper right')
+        ax.set_title(f"Efficiency and purity in function of BDT cut for ID = {i}")
+        ax.grid(which='major', linestyle='-')
+        ax.minorticks_on()
+        ax.grid(which='minor', linestyle='--')
+        if save_fig:
+            fig.savefig(f"efficiency_purity_id_{i}.png")
+            fig.savefig(f"efficiency_purity_id_{i}.pdf")
+        else:
+            plt.show()
+        plt.close()
