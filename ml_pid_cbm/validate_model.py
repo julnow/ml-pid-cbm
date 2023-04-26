@@ -1,8 +1,9 @@
 import os
 import re
 import io
+import sys
 import argparse
-from typing import Tuple
+from typing import Tuple, List
 from collections import defaultdict
 import pandas as pd
 import numpy as np
@@ -10,6 +11,7 @@ from sklearn.metrics import confusion_matrix
 from hipe4ml.model_handler import ModelHandler
 from load_data import LoadData
 from particles_id import ParticlesId as Pid
+from prepare_model import PrepareModel
 import plotting_tools
 
 
@@ -143,9 +145,10 @@ class ValidateModel:
         cm: np.ndarray,
         pid: float,
         pid_variable_name: str,
-        txt_tile: io.TextIOWrapper,
+        txt_tile: io.TextIOWrapper = None,
         dataframe: pd.DataFrame = None,
-    ):
+        print_output: bool = True,
+    ) -> Tuple[float, float]:
         """
         Prints efficiency stats from confusion matrix into efficiency_stats.txt file and stdout.
         Efficiency is calculated as correctly identified X / all true simulated X
@@ -156,6 +159,9 @@ class ValidateModel:
             pid (float): Pid of particles to print efficiency stats.
             pid_variable_name (str): Variable name of pid in input tree.
             df (pd.DataFrame): Dataframe with all variables. Defaults to None.
+
+        Returns:
+            Tuple[float, float]: Tuple with efficiency and purity
         """
         df = dataframe or self.particles_df
         all_simulated_signal = len(df.loc[df[pid_variable_name] == pid])
@@ -176,8 +182,11 @@ class ValidateModel:
         Efficiency: {efficiency:.2f}%
         Purity: {purity:.2f}%
         """
-        print(stats)
-        txt_tile.writelines(stats)
+        if print_output:
+            print(stats)
+        if txt_tile is not None:
+            txt_tile.writelines(stats)
+        return (efficiency, purity)
 
     @staticmethod
     def parse_model_name(
@@ -211,9 +220,50 @@ class ValidateModel:
             raise ValueError("Incorrect model name, regex not found.")
         return (lower_p_cut, upper_p_cut, is_anti)
 
+    def investigate_probas(
+        self,
+        start: float,
+        stop: float,
+        n_steps: int,
+        pid_variable_name: float,
+        save_fig: bool = True,
+    ):
+        print(
+            f"Checking efficiency and purity for {int(n_steps)} probablity cuts between {start}, and {stop}..."
+        )
+        probas = np.linspace(start, stop, n_steps)
+        efficienciess_protons, efficiencies_kaons, efficiencies_pions = [], [], []
+        efficiencies = [efficienciess_protons, efficiencies_kaons, efficiencies_pions]
+        purities_protons, purities_kaons, purities_pions = [], [], []
+        purities = [purities_protons, purities_kaons, purities_pions]
+        for proba in probas:
+            validate.xgb_preds(proba, proba, proba)
+            # confusion matrix
+            cnf_matrix = confusion_matrix(
+                self.particles_df[pid_variable_name],
+                self.particles_df["xgb_preds"],
+            )
+            for pid in range(0, 3):
+                efficiency, purity = validate.efficiency_stats(
+                    cnf_matrix, pid, pid_variable_name, print_output=False
+                )
+                efficiencies[pid].append(efficiency)
+                purities[pid].append(purity)
+        plotting_tools.plot_efficiency_purity(probas, efficiencies, purities, save_fig)
+        if save_fig:
+            print("Plots ready!")
 
-if __name__ == "__main__":
-    # parser for main class
+
+def parse_args(args: List[str]) -> argparse.Namespace:
+    """
+    Arguments parser for the main method.
+
+    Args:
+        args (List[str]): Arguments from the command line, should be sys.argv[1:].
+
+    Returns:
+        argparse.Namespace: argparse.Namespace containg args
+    """
     parser = argparse.ArgumentParser(
         prog="ML_PID_CBM ValidateModel",
         description="Program for validating PID ML models",
@@ -234,29 +284,43 @@ if __name__ == "__main__":
         type=str,
         help="Name of folder containing trained ml model.",
     )
-    parser.add_argument(
+    proba_group = parser.add_mutually_exclusive_group(required=True)
+    proba_group.add_argument(
         "--probabilitycuts",
         "-p",
         nargs=3,
-        required=True,
         type=float,
         help="Probability cut value for respectively protons, kaons, and pions. E.g., 0.9 0.95 0.9",
     )
+    proba_group.add_argument(
+        "--investproba",
+        "-i",
+        nargs=3,
+        type=float,
+        help="Minimal probability cut, maximal, and number of steps to investigate.",
+    )
     parser.add_argument(
         "--nworkers",
+        "-n",
         type=int,
         default=1,
         help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    # parser for main class
+    args = parse_args(sys.argv[1:])
     # config  arguments to be loaded from args
     json_file_name = args.config[0]
     model_name = args.modelname[0]
-    proba_proton, proba_kaon, proba_pion = (
-        args.probabilitycuts[0],
-        args.probabilitycuts[1],
-        args.probabilitycuts[2],
-    )
+    if args.probabilitycuts is not None:
+        proba_proton, proba_kaon, proba_pion = (
+            args.probabilitycuts[0],
+            args.probabilitycuts[1],
+            args.probabilitycuts[2],
+        )
     n_workers = args.nworkers
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
@@ -276,16 +340,27 @@ if __name__ == "__main__":
     validate = ValidateModel(
         lower_p, upper_p, is_anti, json_file_name, test_particles.get_data_frame()
     )
+    # remap Pid to match output XGBoost format
+    validate.remap_names()
+    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
+
+    # # sigma selection for each particle type
+    # for pid in range(0, 3):
+    #     validate.sigma_selection(pid, 4)
+    if args.investproba is not None:
+        validate.investigate_probas(
+            args.investproba[0],
+            args.investproba[1],
+            int(args.investproba[2]),
+            pid_variable_name,
+        )
+        sys.exit(0)
+    # if probabilites are set
     # apply probabilty cuts
     print(
         f"\nApplying probability cuts.\nFor protons: {proba_proton}\nFor kaons: {proba_kaon}\nFor pions: {proba_pion}"
     )
     validate.xgb_preds(proba_proton, proba_kaon, proba_pion)
-    # remap Pid to match output XGBoost format
-    validate.remap_names()
-    # sigma selection for each particle type
-    for pid in range(0, 3):
-        validate.sigma_selection(pid, 4)
     # graphs
     # confusion matrix
     pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
@@ -413,9 +488,13 @@ if __name__ == "__main__":
         "Background",
         (-0.15, 0.15),
     )
-    # pt-rapidity plots
-    for i in range(3):
-        plotting_tools.plot_eff_pT_rap(validate.particles_df, i)
-        plotting_tools.plot_pt_rapidity(validate.particles_df, i)
-    # save df
+    # pt-rapidity plots and for each rapidity
+    features_for_train = PrepareModel.load_features_for_train(json_file_name)
+    for pid in range(3):
+        plotting_tools.plot_before_after_variables(
+            validate.particles_df, pid, pid_variable_name, features_for_train
+        )
+        plotting_tools.plot_eff_pT_rap(validate.particles_df, pid)
+        plotting_tools.plot_pt_rapidity(validate.particles_df, pid)
+    # save validated dataset
     validate.save_df()
