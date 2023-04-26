@@ -96,6 +96,7 @@ def parse_args(args: List[str]) -> argparse.Namespace:
     )
     parser.add_argument(
         "--nworkers",
+        "-n",
         type=int,
         default=1,
         help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
@@ -205,5 +206,5 @@ if __name__ == "__main__":
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
-            train_test_data[2][features_for_train], y_pred_test, model_hdl
+            train_test_data[2][features_for_train], y_pred_test, model_hdl, n_sample=1000, approximate=True
         )
