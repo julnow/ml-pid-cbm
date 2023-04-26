@@ -220,7 +220,7 @@ class ValidateModel:
             raise ValueError("Incorrect model name, regex not found.")
         return (lower_p_cut, upper_p_cut, is_anti)
 
-    def investigate_probas(
+    def evaluate_probas(
         self,
         start: float,
         stop: float,
@@ -293,8 +293,8 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         help="Probability cut value for respectively protons, kaons, and pions. E.g., 0.9 0.95 0.9",
     )
     proba_group.add_argument(
-        "--investproba",
-        "-i",
+        "--evaluateproba",
+        "-e",
         nargs=3,
         type=float,
         help="Minimal probability cut, maximal, and number of steps to investigate.",
@@ -305,6 +305,12 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         type=int,
         default=1,
         help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
+    )
+    parser.add_argument(
+        "--interactive",
+        "-i",
+        action="store_true",
+        help="Interactive mode allows selection of probability cuts after evaluating them.",
     )
     return parser.parse_args()
 
@@ -321,6 +327,8 @@ if __name__ == "__main__":
             args.probabilitycuts[1],
             args.probabilitycuts[2],
         )
+    else:
+        proba_proton, proba_kaon, proba_pion = -1., -1., -1.
     n_workers = args.nworkers
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
@@ -347,14 +355,25 @@ if __name__ == "__main__":
     # # sigma selection for each particle type
     # for pid in range(0, 3):
     #     validate.sigma_selection(pid, 4)
-    if args.investproba is not None:
-        validate.investigate_probas(
-            args.investproba[0],
-            args.investproba[1],
-            int(args.investproba[2]),
+    if args.evaluateproba is not None:
+        validate.evaluate_probas(
+            args.evaluateproba[0],
+            args.evaluateproba[1],
+            int(args.evaluateproba[2]),
             pid_variable_name,
+            not args.interactive
         )
-        sys.exit(0)
+        if args.interactive:
+            while proba_proton < 0 or proba_proton > 1:
+                proba_proton = float(input("Enter the probability threshold for proton (between 0 and 1): "))
+
+            while proba_kaon < 0 or proba_kaon > 1:
+                proba_kaon = float(input("Enter the probability threshold for kaon (between 0 and 1): "))
+
+            while proba_pion < 0 or proba_pion > 1:
+                proba_pion = float(input("Enter the probability threshold for pion (between 0 and 1): "))
+        else:
+            sys.exit(0)
     # if probabilites are set
     # apply probabilty cuts
     print(

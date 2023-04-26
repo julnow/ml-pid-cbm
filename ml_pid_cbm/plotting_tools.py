@@ -69,9 +69,10 @@ def tof_plot(
         file_name = particles_title.replace(" ", "_")
         plt.savefig(f"{file_name}.png")
         plt.savefig(f"{file_name}.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def var_distributions_plot(
@@ -93,9 +94,10 @@ def var_distributions_plot(
     if save_fig:
         plt.savefig("vars_disitributions.png")
         plt.savefig("vars_disitributions.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def correlations_plot(
@@ -112,7 +114,9 @@ def correlations_plot(
         if save_fig:
             plot.savefig(f"correlations_plot_{i}.png")
             plot.savefig(f"correlations_plot_{i}.pdf")
-    plt.close()
+            plt.close()
+        else:
+            plot.show()
 
 
 def opt_history_plot(study: Study, save_fig: bool = True):
@@ -131,9 +135,10 @@ def opt_contour_plot(study: Study, save_fig: bool = True):
     if save_fig:
         fig.write_image("optimization_contour.png")
         fig.write_image("optimization_contour.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def output_train_test_plot(
@@ -165,9 +170,10 @@ def roc_plot(
     if save_fig:
         plt.savefig("roc_plot.png")
         plt.savefig("roc_plot.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def plot_confusion_matrix(
@@ -216,9 +222,10 @@ def plot_confusion_matrix(
     if save_fig:
         plt.savefig(f"{filename}.png")
         plt.savefig(f"{filename}.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def plot_mass2(
@@ -260,9 +267,10 @@ def plot_mass2(
     if save_fig:
         plt.savefig(f"mass2_{particles_title}.png")
         plt.savefig(f"mass2_{particles_title}.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def plot_all_particles_mass2(
@@ -322,9 +330,10 @@ def plot_all_particles_mass2(
     if save_fig:
         plt.savefig(f"mass2_all_selected_{particles_title}.png")
         plt.savefig(f"mass2_all_selected_{particles_title}.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
+    
 
 
 def plot_eff_pT_rap(
@@ -371,9 +380,9 @@ def plot_eff_pT_rap(
     if save_fig:
         plt.savefig(f"plot_eff_pT_rap_ID={pid}.png")
         plt.savefig(f"plot_eff_pT_rap_ID={pid}.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
 
 
 def plot_pt_rapidity(
@@ -413,9 +422,9 @@ def plot_pt_rapidity(
     if save_fig:
         plt.savefig(f"plot_pt_rapidity_ID={pid}.png")
         plt.savefig(f"plot_pt_rapidity_ID={pid}.pdf")
+        plt.close()
     else:
         plt.show()
-    plt.close()
 
 
 def plot_shap_summary(
@@ -437,9 +446,9 @@ def plot_shap_summary(
         if save_fig:
             shap_plot.savefig(f"shap_plot_{i}.png")
             shap_plot.savefig(f"shap_plot_{i}.pdf")
+            shap_plot.close()
         else:
             shap_plot.show()
-        shap_plot.close()
 
 
 def plot_before_after_variables(
@@ -496,31 +505,36 @@ def plot_before_after_variables(
         if save_fig:
             plot.savefig(f"{training_variable}_before_after_pid_{pid}.png")
             plot.savefig(f"{training_variable}_before_after.pdf")
+            plt.close()
+
         else:
             plot.show()
-        plt.close()
 
 
 def plot_efficiency_purity(
     probas: np.ndarray,
     efficiencies: List[List[float]],
     purities: List[List[float]],
-    save_fig: bool = True
+    save_fig: bool = True,
 ):
     for i, (eff, pur) in enumerate(zip(efficiencies, purities)):
-        fig, ax = plt.subplots(figsize=(10, 7), dpi=300)
+        if save_fig:
+            dpi = 300
+        else:
+            dpi = 100
+        fig, ax = plt.subplots(figsize=(10, 7), dpi=dpi)
         ax.plot(probas, eff, label="efficiency")
         ax.plot(probas, pur, label="purity")
         ax.set_xlabel("BDT cut")
         ax.set_ylabel("\% ")
-        ax.legend(loc='upper right')
+        ax.legend(loc="upper right")
         ax.set_title(f"Efficiency and purity in function of BDT cut for ID = {i}")
-        ax.grid(which='major', linestyle='-')
+        ax.grid(which="major", linestyle="-")
         ax.minorticks_on()
-        ax.grid(which='minor', linestyle='--')
+        ax.grid(which="minor", linestyle="--")
         if save_fig:
             fig.savefig(f"efficiency_purity_id_{i}.png")
             fig.savefig(f"efficiency_purity_id_{i}.pdf")
+            plt.close()
         else:
             plt.show()
-        plt.close()
