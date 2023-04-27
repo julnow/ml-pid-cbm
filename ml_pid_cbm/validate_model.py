@@ -1,18 +1,20 @@
+import argparse
+import io
 import os
 import re
-import io
 import sys
-import argparse
-from typing import Tuple, List
 from collections import defaultdict
-import pandas as pd
+from typing import List, Tuple
+
 import numpy as np
-from sklearn.metrics import confusion_matrix
+import pandas as pd
 from hipe4ml.model_handler import ModelHandler
+from sklearn.metrics import confusion_matrix
+
+import plotting_tools
 from load_data import LoadData
 from particles_id import ParticlesId as Pid
 from prepare_model import PrepareModel
-import plotting_tools
 
 
 class ValidateModel:
@@ -328,7 +330,7 @@ if __name__ == "__main__":
             args.probabilitycuts[2],
         )
     else:
-        proba_proton, proba_kaon, proba_pion = -1., -1., -1.
+        proba_proton, proba_kaon, proba_pion = -1.0, -1.0, -1.0
     n_workers = args.nworkers
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
@@ -347,7 +349,7 @@ if __name__ == "__main__":
     #################################################
     test_particles = loader.load_tree(max_workers=n_workers)
     df_with_v_tof = test_particles.get_data_frame()
-    df_with_v_tof['Complex_v_tof'] = df_with_v_tof.eval('Complex_l / Complex_t')
+    df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
     test_particles.set_data_frame(df_with_v_tof)
     test_particles.apply_model_handler(model_hdl)
     ####################################################
@@ -369,17 +371,29 @@ if __name__ == "__main__":
             args.evaluateproba[1],
             int(args.evaluateproba[2]),
             pid_variable_name,
-            not args.interactive
+            not args.interactive,
         )
         if args.interactive:
             while proba_proton < 0 or proba_proton > 1:
-                proba_proton = float(input("Enter the probability threshold for proton (between 0 and 1): "))
+                proba_proton = float(
+                    input(
+                        "Enter the probability threshold for proton (between 0 and 1): "
+                    )
+                )
 
             while proba_kaon < 0 or proba_kaon > 1:
-                proba_kaon = float(input("Enter the probability threshold for kaon (between 0 and 1): "))
+                proba_kaon = float(
+                    input(
+                        "Enter the probability threshold for kaon (between 0 and 1): "
+                    )
+                )
 
             while proba_pion < 0 or proba_pion > 1:
-                proba_pion = float(input("Enter the probability threshold for pion (between 0 and 1): "))
+                proba_pion = float(
+                    input(
+                        "Enter the probability threshold for pion (between 0 and 1): "
+                    )
+                )
         else:
             sys.exit(0)
     # if probabilites are set
