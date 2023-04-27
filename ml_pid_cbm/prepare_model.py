@@ -3,6 +3,7 @@ This module is used for preparing the handler of the ML model.
 """
 import json
 from typing import Dict, List, Tuple, Union
+
 import xgboost as xgb
 from hipe4ml.analysis_utils import train_test_generator
 from hipe4ml.model_handler import ModelHandler

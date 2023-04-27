@@ -4,9 +4,11 @@ data cleaning and preparing training and test dataset.
 """
 
 import json
-from typing import Tuple, List
-from hipe4ml.tree_handler import TreeHandler
+from typing import List, Tuple
+
 from hipe4ml.model_handler import ModelHandler
+from hipe4ml.tree_handler import TreeHandler
+
 from particles_id import ParticlesId as Pid
 
 
@@ -158,7 +160,7 @@ class LoadData:
             preselection=preselection,
             max_workers=max_workers,
             model_handler=model_handler,
-            output_margin=False
+            output_margin=False,
         )
 
         return tree_handler

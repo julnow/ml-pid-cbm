@@ -1,7 +1,9 @@
 import unittest
-from unittest.mock import patch, mock_open
-from hipe4ml.tree_handler import TreeHandler
+from unittest.mock import mock_open, patch
+
 import pandas as pd
+from hipe4ml.tree_handler import TreeHandler
+
 from load_data import LoadData
 
 
@@ -66,7 +68,6 @@ class TestLoadData(unittest.TestCase):
             test_str = self.loader_pos.clean_tree()
             expected_str = "(0.0 <= Complex_pT < 2.0) and (0.0 <= Complex_eta < 6.0) and (0.0 <= Complex_p < 3.0) and (Complex_q > 0)"
             self.assertEqual(test_str, expected_str)
-            
 
     def test_get_particles_type(self):
         proton_entry = {

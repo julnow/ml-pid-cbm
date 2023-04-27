@@ -1,12 +1,14 @@
 import argparse
 import os
+from concurrent.futures import ThreadPoolExecutor
 from shutil import copy2
 from typing import Set
-from concurrent.futures import ThreadPoolExecutor
+
 import pandas as pd
 from sklearn.metrics import confusion_matrix
-from load_data import LoadData
+
 import plotting_tools
+from load_data import LoadData
 from validate_model import ValidateModel
 
 

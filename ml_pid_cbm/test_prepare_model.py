@@ -1,7 +1,9 @@
 import unittest
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+
 import pandas as pd
 from hipe4ml.tree_handler import TreeHandler
+
 from prepare_model import PrepareModel
 
 
@@ -61,7 +63,6 @@ class TestPrepareModel(unittest.TestCase):
             self.assertEqual(read_ranges, target_ranges)
 
     def test_prepare_train_test_data(self):
-
         with patch("builtins.open", mock_open(read_data=self.json_data)):
             self.train_model_without_opt.prepare_train_test_data(
                 self.proton_tree_handler,
@@ -77,7 +78,6 @@ class TestPrepareModel(unittest.TestCase):
             )
 
     def test_prepare_model_handler(self):
-
         with patch("builtins.open", mock_open(read_data=self.json_data)):
             train_test_data = self.train_model_without_opt.prepare_train_test_data(
                 self.proton_tree_handler,
@@ -85,7 +85,7 @@ class TestPrepareModel(unittest.TestCase):
                 self.pion_tree_handler,
                 0.1,
             )
-            self.train_model_with_opt.prepare_model_handler(  #TODO modify and suppress output
+            self.train_model_with_opt.prepare_model_handler(  # TODO modify and suppress output
                 train_test_data=train_test_data
             )
             self.assertRaises(

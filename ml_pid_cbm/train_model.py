@@ -1,14 +1,16 @@
-import os
-import gc
-import sys
-from typing import List
 import argparse
+import gc
+import os
+import sys
 from shutil import copy2
+from typing import List
+
 from hipe4ml.model_handler import ModelHandler
 from sklearn.utils.class_weight import compute_sample_weight
+
+import plotting_tools
 from load_data import LoadData
 from prepare_model import PrepareModel
-import plotting_tools
 
 
 class TrainModel:
