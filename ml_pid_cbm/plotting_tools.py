@@ -1,22 +1,22 @@
-from typing import List
+import gc
 import itertools
-from concurrent.futures import ThreadPoolExecutor
-import matplotlib.pyplot as plt
-import matplotlib.colors
-import matplotlib.cm as cm
-from matplotlib import rcParams
-from pandas import DataFrame
-from pandas import Series
-import numpy as np
+from typing import List
+
 import fasttreeshap as shap
-from hipe4ml.plot_utils import plot_distr, plot_corr, plot_output_train_test, plot_roc
-from hipe4ml.tree_handler import TreeHandler
+import matplotlib.cm as cm
+import matplotlib.colors
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from hipe4ml.model_handler import ModelHandler
-from optuna.visualization import (
-    plot_optimization_history,
-    plot_contour,
-)
+from hipe4ml.plot_utils import (plot_corr, plot_distr, plot_output_train_test,
+                                plot_roc)
+from hipe4ml.tree_handler import TreeHandler
+from matplotlib import rcParams
 from optuna.study import Study
+from optuna.visualization import plot_contour, plot_optimization_history
+from sklearn.utils import resample
+
 from load_data import LoadData
 
 PARAMS = {
@@ -32,7 +32,7 @@ rcParams.update(PARAMS)
 
 
 def tof_plot(
-    df: DataFrame,
+    df: pd.pd.DataFrame,
     json_file_name: str,
     particles_title: str,
     file_name: str = "tof_plot",
@@ -154,7 +154,7 @@ def output_train_test_plot(
 
 
 def roc_plot(
-    test_df: DataFrame,
+    test_df: pd.pd.DataFrame,
     test_labels_array,
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
@@ -220,8 +220,8 @@ def plot_confusion_matrix(
 
 
 def plot_mass2(
-    xgb_mass: Series,
-    sim_mass: Series,
+    xgb_mass: pd.Series,
+    sim_mass: pd.Series,
     particles_title: str,
     range1,
     y_axis_log: bool = False,
@@ -264,7 +264,7 @@ def plot_mass2(
 
 
 def plot_all_particles_mass2(
-    xgb_selected: Series,
+    xgb_selected: pd.Series,
     mass2_variable_name: str,
     pid_variable_name: str,
     particles_title: str,
@@ -326,7 +326,7 @@ def plot_all_particles_mass2(
 
 
 def plot_eff_pT_rap(
-    df: DataFrame,
+    df: pd.pd.DataFrame,
     pid: float,
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
@@ -375,7 +375,7 @@ def plot_eff_pT_rap(
 
 
 def plot_pt_rapidity(
-    df: DataFrame,
+    df: pd.DataFrame,
     pid: float,
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
@@ -417,20 +417,39 @@ def plot_pt_rapidity(
 
 
 def plot_shap_summary(
-    x_train: DataFrame,
-    y_train: DataFrame,
+    x_train: pd.DataFrame,
+    y_train: pd.DataFrame,
     model_hdl: ModelHandler,
     features_names: List[str],
     n_workers: int = 1,
     save_fig: bool = True,
     approximate: bool = False,
+    n_samples: int = 5000,
 ):
     print("Creating shap plots...")
     explainer = shap.TreeExplainer(
         model_hdl.get_original_model(), n_jobs=n_workers, approximate=approximate
     )
+    # Apply n_sanples in each class
+    y_train_df = pd.pd.DataFrame(y_train, columns=["predicted_class"])
+    merged_df = pd.concat([x_train, y_train_df], axis=1)
+    grouped_df = merged_df.groupby(merged_df.iloc[:, -1])
+    resampled_df = pd.concat(
+        [
+            resample(group, n_samples=min(n_samples, len(group)), replace=False)
+            for _, group in grouped_df
+        ]
+    )
 
-    shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
+    # Split the resampled pd.DataFrame back into input data and label data
+    x_train_resampled = resampled_df.iloc[:, :-1]
+    y_train_resampled = resampled_df.iloc[:, -1]
+    del merged_df, grouped_df, resampled_df
+    gc.collect()
+
+    shap_values = explainer.shap_values(
+        x_train_resampled, y_train_resampled, check_additivity=False
+    )
     num_classes = len(shap_values)  # get the number of classes
     for i in range(num_classes):
         fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
@@ -472,7 +491,7 @@ def plot_shap_summary(
 
 
 def plot_before_after_variables(
-    df: DataFrame,
+    df: pd.DataFrame,
     pid: float,
     pid_variable_name: str,
     training_variables: List[str],
