@@ -1,5 +1,6 @@
 from typing import List
 import itertools
+from concurrent.futures import ThreadPoolExecutor
 import matplotlib.pyplot as plt
 import matplotlib.colors
 import matplotlib.cm as cm
@@ -7,13 +8,8 @@ from matplotlib import rcParams
 from pandas import DataFrame
 from pandas import Series
 import numpy as np
-from hipe4ml.plot_utils import (
-    plot_distr,
-    plot_corr,
-    plot_output_train_test,
-    plot_roc,
-    plot_feature_imp,
-)
+import fasttreeshap as shap
+from hipe4ml.plot_utils import plot_distr, plot_corr, plot_output_train_test, plot_roc
 from hipe4ml.tree_handler import TreeHandler
 from hipe4ml.model_handler import ModelHandler
 from optuna.visualization import (
@@ -72,7 +68,6 @@ def tof_plot(
         plt.close()
     else:
         plt.show()
-    
 
 
 def var_distributions_plot(
@@ -97,7 +92,6 @@ def var_distributions_plot(
         plt.close()
     else:
         plt.show()
-    
 
 
 def correlations_plot(
@@ -138,7 +132,6 @@ def opt_contour_plot(study: Study, save_fig: bool = True):
         plt.close()
     else:
         plt.show()
-    
 
 
 def output_train_test_plot(
@@ -173,7 +166,6 @@ def roc_plot(
         plt.close()
     else:
         plt.show()
-    
 
 
 def plot_confusion_matrix(
@@ -225,7 +217,6 @@ def plot_confusion_matrix(
         plt.close()
     else:
         plt.show()
-    
 
 
 def plot_mass2(
@@ -270,7 +261,6 @@ def plot_mass2(
         plt.close()
     else:
         plt.show()
-    
 
 
 def plot_all_particles_mass2(
@@ -333,7 +323,6 @@ def plot_all_particles_mass2(
         plt.close()
     else:
         plt.show()
-    
 
 
 def plot_eff_pT_rap(
@@ -431,24 +420,55 @@ def plot_shap_summary(
     x_train: DataFrame,
     y_train: DataFrame,
     model_hdl: ModelHandler,
-    n_sample: int = 5000,
+    features_names: List[str],
+    n_workers: int = 1,
     save_fig: bool = True,
-    labels: List[str] = ["protons", "kaons", "pions"],
     approximate: bool = False,
 ):
-    print("Creating shapley plots...")
-    shap_plots = plot_feature_imp(
-        x_train, y_train, model_hdl, labels, n_sample, approximate
+    print("Creating shap plots...")
+    explainer = shap.TreeExplainer(
+        model_hdl.get_original_model(), n_jobs=n_workers, approximate=approximate
     )
-    plt.tight_layout()
-    for i, shap_plot in enumerate(shap_plots):
-        print(i)
+
+    shap_values = explainer.shap_values(x_train, y_train, check_additivity=False)
+    num_classes = len(shap_values)  # get the number of classes
+    for i in range(num_classes):
+        fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+        shap.summary_plot(
+            shap_values[i],
+            x_train,
+            feature_names=features_names,
+            show=False,
+        )
+        w, h = plt.gcf().get_size_inches()
+        plt.gcf().set_size_inches(h + 2, h)
+        plt.gcf().set_size_inches(w, w * 3 / 4)
+        plt.gcf().axes[-1].set_aspect("auto")
+        plt.gcf().axes[-1].set_box_aspect(50)
+        plt.xlabel(f"SHAP values for class {i}", fontsize=18)
+        ax.spines["top"].set_visible(True)
+        ax.spines["right"].set_visible(True)
+        ax.spines["bottom"].set_visible(True)
+        ax.spines["left"].set_visible(True)
+        ax.tick_params(
+            axis="both",
+            which="major",
+            length=10,
+            direction="in",
+            labelsize=15,
+            zorder=4,
+        )
+        ax.minorticks_on()
+        ax.tick_params(
+            axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
+        )
+        fig.tight_layout()
         if save_fig:
-            shap_plot.savefig(f"shap_plot_{i}.png")
-            shap_plot.savefig(f"shap_plot_{i}.pdf")
-            shap_plot.close()
+            plt.savefig(f"shap_summary_{i}.png")
+            plt.savefig(f"shap_summary_{i}.pdf")
+            plt.close()
         else:
-            shap_plot.show()
+            plt.show()
 
 
 def plot_before_after_variables(
