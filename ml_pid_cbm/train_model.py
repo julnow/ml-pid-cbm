@@ -141,13 +141,19 @@ if __name__ == "__main__":
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
     tree_handler = loader.load_tree(max_workers=n_workers)
-    # TODO fix the data, here we narrow sigma selection for protons
-    if upper_p_cut <= 3:
-        NSIGMA_PROTON = 2
-    else:
-        NSIGMA_PROTON = 3
+    # temporary solution for dealing with v_tof = l/t
+    #################################################
+    df_with_v_tof = tree_handler.get_data_frame()
+    df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
+    tree_handler.set_data_frame(df_with_v_tof)
+    ####################################################
+    # # TODO fix the data, here we narrow sigma selection for protons
+    # if upper_p_cut <= 3:
+    #     NSIGMA_PROTON = 2
+    # else:
+    #     NSIGMA_PROTON = 3
     protons, kaons, pions = loader.get_protons_kaons_pions(
-        tree_handler, nsigma_proton=NSIGMA_PROTON
+        tree_handler  # , nsigma_proton=NSIGMA_PROTON
     )
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
     pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
@@ -179,7 +185,7 @@ if __name__ == "__main__":
     train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
     del protons, kaons, pions
     gc.collect()
-    features_for_train = model_hdl.load_features_for_train()
+    features_for_train = model_hdl.load_features_for_train(json_file_name)
     print("\nPreparing model handler\n")
     model_hdl, study = model_hdl.prepare_model_handler(train_test_data=train_test_data)
     if create_plots and optimize_hyper_params:
@@ -206,5 +212,9 @@ if __name__ == "__main__":
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
-            train_test_data[2][features_for_train], y_pred_test, model_hdl, n_sample=1000, approximate=True
+            train_test_data[2][features_for_train],
+            y_pred_test,
+            model_hdl,
+            features_for_train,
+            n_workers
         )
