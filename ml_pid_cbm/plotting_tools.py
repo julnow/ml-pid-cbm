@@ -32,7 +32,7 @@ rcParams.update(PARAMS)
 
 
 def tof_plot(
-    df: pd.pd.DataFrame,
+    df: pd.DataFrame,
     json_file_name: str,
     particles_title: str,
     file_name: str = "tof_plot",
@@ -154,7 +154,7 @@ def output_train_test_plot(
 
 
 def roc_plot(
-    test_df: pd.pd.DataFrame,
+    test_df: pd.DataFrame,
     test_labels_array,
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
@@ -326,7 +326,7 @@ def plot_all_particles_mass2(
 
 
 def plot_eff_pT_rap(
-    df: pd.pd.DataFrame,
+    df: pd.DataFrame,
     pid: float,
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
@@ -431,9 +431,9 @@ def plot_shap_summary(
         model_hdl.get_original_model(), n_jobs=n_workers, approximate=approximate
     )
     # Apply n_sanples in each class
-    y_train_df = pd.pd.DataFrame(y_train, columns=["predicted_class"])
+    y_train_df = pd.DataFrame(y_train, columns=["true_class"])
     merged_df = pd.concat([x_train, y_train_df], axis=1)
-    grouped_df = merged_df.groupby(merged_df.iloc[:, -1])
+    grouped_df = merged_df.groupby("true_class")
     resampled_df = pd.concat(
         [
             resample(group, n_samples=min(n_samples, len(group)), replace=False)
@@ -443,7 +443,7 @@ def plot_shap_summary(
 
     # Split the resampled pd.DataFrame back into input data and label data
     x_train_resampled = resampled_df.iloc[:, :-1]
-    y_train_resampled = resampled_df.iloc[:, -1]
+    y_train_resampled = resampled_df.iloc[:, -1].to_numpy()
     del merged_df, grouped_df, resampled_df
     gc.collect()
 
@@ -455,7 +455,7 @@ def plot_shap_summary(
         fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
         shap.summary_plot(
             shap_values[i],
-            x_train,
+            x_train_resampled,
             feature_names=features_names,
             show=False,
         )
