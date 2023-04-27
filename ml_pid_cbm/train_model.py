@@ -7,7 +7,7 @@ from typing import List
 
 from hipe4ml.model_handler import ModelHandler
 from sklearn.utils.class_weight import compute_sample_weight
-
+import pandas as pd
 import plotting_tools
 from load_data import LoadData
 from prepare_model import PrepareModel
@@ -215,7 +215,7 @@ if __name__ == "__main__":
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
             train_test_data[2][features_for_train],
-            y_pred_test,
+            train_test_data[3],
             model_hdl,
             features_for_train,
             n_workers
