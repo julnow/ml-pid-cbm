@@ -7,3 +7,4 @@ for dir in model_*
             pdfunite $dir/*.pdf $dir.pdf 
        fi
 done
+pdfunite all_models/*.pdf all_models.pdf
