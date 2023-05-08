@@ -31,33 +31,6 @@ class TestLoadData(unittest.TestCase):
             anti_particles=True,
         )
 
-    def test_create_cut_string(self):
-        # ideally formatted
-        expected_string = "0.1 <= test_cut < 13.0"
-        self.assertEqual(
-            LoadData.create_cut_string(0.1, 13.0, "test_cut"), expected_string
-        )
-        # not ideally formatted
-        self.assertEqual(
-            LoadData.create_cut_string(0.141, 13, "test_cut"), expected_string
-        )
-
-    def test_load_var_name(self):
-        json_data = """{"var_names":{"momentum": "Complex_p","charge": "Complex_q"}}"""
-        # mocking json file for testing
-        with patch("builtins.open", mock_open(read_data=json_data)):
-            self.assertEqual(
-                self.loader_pos.load_var_name("test.json", "momentum"), "Complex_p"
-            )
-
-    def test_load_quality_cuts(self):
-        json_data = """{"cuts":{"Complex_mass2": {"lower": -1.0,"upper": 2.0},"Complex_pT": {"lower": 0.0,"upper": 2.0}}}"""
-        # mocking json file for testing
-        with patch("builtins.open", mock_open(read_data=json_data)):
-            quality_cuts = self.loader_pos.load_quality_cuts("test.json")
-            expected_cuts = ["-1.0 <= Complex_mass2 < 2.0", "0.0 <= Complex_pT < 2.0"]
-            self.assertEqual(quality_cuts, expected_cuts)
-
     def test_clean_tree(self):
         # manually created entries to test data cleanin
         # mock json file for testing

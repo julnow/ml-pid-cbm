@@ -5,6 +5,7 @@ data cleaning and preparing training and test dataset.
 
 import json
 from typing import List, Tuple
+import json_tools
 
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
@@ -114,8 +115,8 @@ class LoadData:
             TreeHandler: TreeHandler with given particles type in given sigma region
         """
         json_file_name = json_file_name or self.json_file_name
-        pid_var_name = self.__class__.load_var_name(json_file_name, "pid")
-        mass2_var_name = self.__class__.load_var_name(json_file_name, "mass2")
+        pid_var_name = json_tools.load_var_name(json_file_name, "pid")
+        mass2_var_name = json_tools.load_var_name(json_file_name, "mass2")
         particles = tree_handler.get_subset(f"{pid_var_name} == {pid}")
         # getting selected nsigma region in the mass2
         if nsigma > 0:
@@ -123,7 +124,7 @@ class LoadData:
             mean = mass2_column.mean()
             std = mass2_column.std()
             if std > 0:
-                mass2_cut = LoadData.create_cut_string(
+                mass2_cut = json_tools.create_cut_string(
                     mean - nsigma * std, mean + nsigma * std, mass2_var_name
                 )
                 particles = particles.get_subset(mass2_cut)
@@ -162,7 +163,7 @@ class LoadData:
             model_handler=model_handler,
             output_margin=False,
         )
-
+        print(f"Loading tree from {data_file_name}...")
         return tree_handler
 
     def clean_tree(self, json_file_name: str = None) -> str:
@@ -178,16 +179,14 @@ class LoadData:
         """
         preselection = ""
         json_file_name = json_file_name or self.json_file_name
-        quality_cuts = self.load_quality_cuts(json_file_name)
-        momemntum_variable_name = self.__class__.load_var_name(
-            json_file_name, "momentum"
-        )
-        charge_variable_name = self.__class__.load_var_name(json_file_name, "charge")
+        quality_cuts = json_tools.load_quality_cuts(json_file_name)
+        momemntum_variable_name = json_tools.load_var_name(json_file_name, "momentum")
+        charge_variable_name = json_tools.load_var_name(json_file_name, "charge")
 
         for cut in quality_cuts:
             preselection += f"({cut}) and "
         # include specific momentum cut
-        p_cut = self.create_cut_string(
+        p_cut = json_tools.create_cut_string(
             self.lower_p_cut, self.upper_p_cut, momemntum_variable_name
         )
         preselection += f"({p_cut}) and "
@@ -198,68 +197,3 @@ class LoadData:
             preselection += f"({charge_variable_name} < 0)"
 
         return preselection
-
-    def load_quality_cuts(self, json_file_name: str) -> List[str]:
-        """Loads quality cuts defined in json file into array of strings
-
-        Args:
-            json_filename (str): Name of the json file containg defined cuts
-
-        Returns:
-            list[str]: List of strings containg cuts definitions
-        """
-        with open(json_file_name, "r") as json_file:
-            cuts = json.load(json_file)["cuts"]
-        quality_cuts = [
-            self.__class__.create_cut_string(
-                cut_data["lower"], cut_data["upper"], cut_name
-            )
-            for cut_name, cut_data in cuts.items()
-        ]
-        return quality_cuts
-
-    @staticmethod
-    def load_var_name(json_file_name: str, var: str) -> str:
-        """Loads physical variable name used in tree from json file.
-
-        Args:
-            json_file_name (str): Name of the json file with var_names
-            var (str): Physical variable we look for
-
-        Returns:
-            str: Name of physical variable in our tree structure loaded from json file
-        """
-        with open(json_file_name, "r") as json_file:
-            var_names = json.load(json_file)["var_names"]
-        return var_names[var]
-
-    @staticmethod
-    def create_cut_string(lower: float, upper: float, cut_name: str) -> str:
-        """Creates cut string for hipe4ml loader in format "lower_value < cut_name < upper_value"
-
-        Args:
-            lower (float): Value of lower cut, 1 decimal place
-            upper (float): Value of upper cut, 1 decimal place
-            cut_name (str): Name of the cut variable
-
-        Returns:
-            str: Formatted string in format "lower_value < cut_name < upper_value"
-        """
-        cut_string = f"{lower:.1f} <= {cut_name} < {upper:.1f}"
-        return cut_string
-
-    @staticmethod
-    def load_file_name(json_file_name: str, training_or_test: str):
-        """Load file names of both training and test dataset
-
-        Args:
-            json_file_name (str): Json file containg filenames.
-            training_or_test (str): Name of the dataset (e.g., "test", "training") as defined
-            in json to load the dataset filename.
-
-        Returns:
-            _type_: _description_
-        """
-        with open(json_file_name, "r") as json_file:
-            var_names = json.load(json_file)["file_names"]
-        return var_names[training_or_test]

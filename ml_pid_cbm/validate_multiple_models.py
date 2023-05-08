@@ -10,6 +10,7 @@ from sklearn.metrics import confusion_matrix
 import plotting_tools
 from load_data import LoadData
 from validate_model import ValidateModel
+import json_tools
 
 
 def load_pickles(files_list: Set[str], n_workers: int = 1) -> pd.DataFrame:
@@ -127,7 +128,7 @@ if __name__ == "__main__":
     #     "bckgr (XGB-selected)"
     # )
     # mass2 plots
-    mass2_variable_name = LoadData.load_var_name(json_file_name, "mass2")
+    mass2_variable_name = json_tools.load_var_name(json_file_name, "mass2")
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 0][
             mass2_variable_name

@@ -15,6 +15,7 @@ import plotting_tools
 from load_data import LoadData
 from particles_id import ParticlesId as Pid
 from prepare_model import PrepareModel
+import json_tools
 
 
 class ValidateModel:
@@ -65,7 +66,7 @@ class ValidateModel:
         Protons: 0; Kaons: 1; Pions, Electrons, Muons: 2; Other: 3
 
         """
-        pid_variable_name = LoadData.load_var_name(self.json_file_name, "pid")
+        pid_variable_name = json_tools.load_var_name(self.json_file_name, "pid")
         df = self.particles_df
         if self.anti_particles:
             df[pid_variable_name] = (
@@ -120,9 +121,9 @@ class ValidateModel:
             info (bool, optional): _description_. Defaults to False.
         """
         df = self.particles_df
-        pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
+        pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
         # for selected pid
-        mass2_variable_name = LoadData.load_var_name(json_file_name, "mass2")
+        mass2_variable_name = json_tools.load_var_name(json_file_name, "mass2")
         mean = df[df[pid_variable_name] == pid][mass2_variable_name].mean()
         std = df[df[pid_variable_name] == pid][mass2_variable_name].std()
         outside_sigma = (df[pid_variable_name] == pid) & (

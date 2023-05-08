@@ -40,18 +40,6 @@ class TestPrepareModel(unittest.TestCase):
         cls.pion_tree_handler = TreeHandler()
         cls.pion_tree_handler.set_data_frame(pd.DataFrame([cls.pion_entry] * 10))
 
-    def test_load_features_for_train(self):
-        target_features = ["Complex_mass2", "Complex_p"]
-        with patch("builtins.open", mock_open(read_data=self.json_data)):
-            read_features = self.train_model_without_opt.load_features_for_train()
-            self.assertEqual(target_features, read_features)
-
-    def test_load_hyper_params_vals(self):
-        target_vals = (596, 5, 0.07161792803939408)
-        with patch("builtins.open", mock_open(read_data=self.json_data)):
-            read_vals = self.train_model_without_opt.load_hyper_params_vals()
-            self.assertEqual(target_vals, read_vals)
-
     def test_load_hyper_params_ranges(self):
         target_ranges = {
             "n_estimators": (400, 1000),

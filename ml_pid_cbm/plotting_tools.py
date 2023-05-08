@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from hipe4ml.model_handler import ModelHandler
-from hipe4ml.plot_utils import (plot_corr, plot_distr, plot_output_train_test,
-                                plot_roc)
+from hipe4ml.plot_utils import plot_corr, plot_distr, plot_output_train_test, plot_roc
 from hipe4ml.tree_handler import TreeHandler
 from matplotlib import rcParams
 from optuna.study import Study
@@ -18,6 +17,7 @@ from optuna.visualization import plot_contour, plot_optimization_history
 from sklearn.utils import resample
 
 from load_data import LoadData
+import json_tools
 
 PARAMS = {
     "axes.titlesize": "22",
@@ -41,9 +41,9 @@ def tof_plot(
     save_fig: bool = True,
 ):
     # load variable names
-    charge_var_name = LoadData.load_var_name(json_file_name, "charge")
-    momentum_var_name = LoadData.load_var_name(json_file_name, "momentum")
-    mass2_var_name = LoadData.load_var_name(json_file_name, "mass2")
+    charge_var_name = json_tools.load_var_name(json_file_name, "charge")
+    momentum_var_name = json_tools.load_var_name(json_file_name, "momentum")
+    mass2_var_name = json_tools.load_var_name(json_file_name, "mass2")
     # prepare plot variables
     ranges = [x_axis_range, y_axis_range]
     qp = df[charge_var_name] * df[momentum_var_name]
@@ -138,10 +138,17 @@ def output_train_test_plot(
     model_hdl: ModelHandler,
     train_test_data,
     leg_labels: List[str] = ["protons", "kaons", "pions"],
-    save_fig: bool = True,
+    logscale: bool = False,
+    save_fig: bool = True
 ):
     ml_out_fig = plot_output_train_test(
-        model_hdl, train_test_data, 100, False, leg_labels, True, density=True
+        model_hdl,
+        train_test_data,
+        100,
+        False,
+        leg_labels,
+        logscale=logscale,
+        density=True,
     )
 
     for idx, fig in enumerate(ml_out_fig):
@@ -424,7 +431,7 @@ def plot_shap_summary(
     n_workers: int = 1,
     save_fig: bool = True,
     approximate: bool = False,
-    n_samples: int = 5000,
+    n_samples: int = 50000,
 ):
     print("Creating shap plots...")
     explainer = shap.TreeExplainer(

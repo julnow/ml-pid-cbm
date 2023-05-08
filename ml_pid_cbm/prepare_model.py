@@ -2,13 +2,14 @@
 This module is used for preparing the handler of the ML model.
 """
 import json
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple, Union
 
 import xgboost as xgb
 from hipe4ml.analysis_utils import train_test_generator
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
 from optuna.study import Study
+import json_tools
 
 
 class PrepareModel:
@@ -42,7 +43,7 @@ class PrepareModel:
             and optuna optuna.study.Study if was performed.
         """
         json_file_name = json_file_name or self.json_file_name
-        features_for_train = self.__class__.load_features_for_train(json_file_name)
+        features_for_train = json_tools.load_features_for_train(json_file_name)
         if self.use_gpu:
             tree_method = "gpu_hist"
         else:
@@ -56,14 +57,14 @@ class PrepareModel:
                 hyper_params_ranges,
                 cross_val_scoring="roc_auc_ovo",
                 timeout=120,
-                n_jobs=2,
-                n_trials=6,
+                n_jobs=4,
+                n_trials=3,
                 direction="maximize",
             )
         elif self.optimize_hyper_params is True and train_test_data is None:
             raise TypeError("train_test_data must be defined to optimize hyper params")
         elif self.optimize_hyper_params is False:
-            n_estimators, max_depth, learning_rate = self.load_hyper_params_vals(
+            n_estimators, max_depth, learning_rate = json_tools.load_hyper_params_vals(
                 json_file_name
             )
             model_clf = xgb.XGBClassifier(
@@ -97,39 +98,6 @@ class PrepareModel:
         # json accepts only lists, so they need to be transformed back into tuples
         hyper_params_ranges = {k: tuple(v) for k, v in hyper_params_ranges.items()}
         return hyper_params_ranges
-
-    def load_hyper_params_vals(
-        self, json_file_name: str = None
-    ) -> Tuple[str, str, str]:
-        """Loads XGBoost hyper parameters values from json file to skip optimization.
-
-        Args:
-            json_file_name (str, optional): Name of json file. Defaults to None.
-
-        Returns:
-            Tuple[str, str, str]: Tuple containg n_estimators, max_depth, learning_rate.
-        """
-        json_file_name = json_file_name or self.json_file_name
-        with open(json_file_name, "r") as json_file:
-            hyper_params_vals = json.load(json_file)["hyper_params"]["values"]
-        n_estimators = hyper_params_vals["n_estimators"]
-        max_depth = hyper_params_vals["max_depth"]
-        learning_rate = hyper_params_vals["learning_rate"]
-        return (n_estimators, max_depth, learning_rate)
-
-    @staticmethod
-    def load_features_for_train(json_file_name: str = None) -> List[str]:
-        """Load names of variables for training from json file.
-
-        Args:
-            json_file_name (str, optional): Name of json file. Defaults to None.
-
-        Returns:
-            List[str]: List of variables for training.
-        """
-        with open(json_file_name, "r") as json_file:
-            features_for_train = json.load(json_file)["features_for_train"]
-        return features_for_train
 
     @staticmethod
     def prepare_train_test_data(
