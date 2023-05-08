@@ -11,6 +11,7 @@ import pandas as pd
 import plotting_tools
 from load_data import LoadData
 from prepare_model import PrepareModel
+import json_tools
 
 
 class TrainModel:
@@ -115,6 +116,11 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         action="store_true",
         help="Creates plots and saves them to file, without printing.",
     )
+    parser.add_argument(
+        "--usevalidation",
+        action="store_true",
+        help="if should use validation dataset for post-training plots",
+    )
     return parser.parse_args(args)
 
 
@@ -131,11 +137,12 @@ if __name__ == "__main__":
     n_workers = args.nworkers
     create_plots = args.printplots or args.saveplots or False
     save_plots = args.saveplots
+    use_validation = args.usevalidation
     if anti_particles:
         model_name = f"model_{lower_p_cut:.1f}_{upper_p_cut:.1f}_anti"
     else:
         model_name = f"model_{lower_p_cut:.1f}_{upper_p_cut:.1f}_positive"
-    data_file_name = LoadData.load_file_name(json_file_name, "training")
+    data_file_name = json_tools.load_file_name(json_file_name, "training")
 
     # loading data
     print(f"\nLoading data from {data_file_name}\n")
@@ -158,7 +165,7 @@ if __name__ == "__main__":
         tree_handler  # , nsigma_proton=NSIGMA_PROTON
     )
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
-    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
+    pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
     del tree_handler
     gc.collect()
     # change location to specific folder for this model
@@ -184,10 +191,10 @@ if __name__ == "__main__":
         )
     # loading model handler
     model_hdl = PrepareModel(json_file_name, optimize_hyper_params, use_gpu)
-    train_test_data = model_hdl.prepare_train_test_data(protons, kaons, pions)
+    train_test_data = PrepareModel.prepare_train_test_data(protons, kaons, pions)
     del protons, kaons, pions
     gc.collect()
-    features_for_train = model_hdl.load_features_for_train(json_file_name)
+    features_for_train = json_tools.load_features_for_train(json_file_name)
     print("\nPreparing model handler\n")
     model_hdl, study = model_hdl.prepare_model_handler(train_test_data=train_test_data)
     if create_plots and optimize_hyper_params:
@@ -201,22 +208,49 @@ if __name__ == "__main__":
     train.train_model_handler(train_test_data, sample_weights)
     print("\nModel trained!")
     train.save_model(model_name)
-    # shapleys graphs
+    # loading validation dataset as test dataset for pos-training plots
+    if use_validation:
+        data_file_name_test = json_tools.load_file_name(json_file_name, "test")
+
+        loader_test = LoadData(
+            data_file_name_test, json_file_name, lower_p_cut, upper_p_cut, anti_particles
+        )
+        tree_handler_test = loader_test.load_tree(max_workers=n_workers)
+        # temporary solution for dealing with v_tof = l/t
+        #################################################
+        df_with_v_tof = tree_handler_test.get_data_frame()
+        df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
+        tree_handler_test.set_data_frame(df_with_v_tof)
+        ####################################################
+        protons_test, kaons_test, pions_test = loader_test.get_protons_kaons_pions(
+            tree_handler_test
+        )
+        validation_data = PrepareModel.prepare_train_test_data(
+            protons_test, kaons_test, pions_test
+        )
+        train_test_data = [
+            train_test_data[0],
+            train_test_data[1],
+            validation_data[0],
+            validation_data[1],
+        ]
     if create_plots:
         print("Creating post-training plots")
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
         plotting_tools.output_train_test_plot(
-            train.model_hdl, train_test_data, save_fig=save_plots
+            train.model_hdl, train_test_data, save_fig=save_plots, logscale=False
         )
 
-        plotting_tools.roc_plot(train_test_data[3], y_pred_test, save_fig=save_plots)
+        plotting_tools.roc_plot(
+            train_test_data[3], y_pred_test, save_fig=save_plots
+        )
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
-            train_test_data[2][features_for_train],
-            train_test_data[3],
+            train_test_data[0][features_for_train],
+            train_test_data[1],
             model_hdl,
             features_for_train,
-            n_workers
+            n_workers,
         )
