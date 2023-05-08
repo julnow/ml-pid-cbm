@@ -225,12 +225,26 @@ class ValidateModel:
 
     def evaluate_probas(
         self,
-        start: float,
-        stop: float,
-        n_steps: int,
-        pid_variable_name: float,
+        start: float = 0.3,
+        stop: float = 0.98,
+        n_steps: int = 30,
+        pid_variable_name: str = "Complex_pid",
+        purity_cut: float = 0.0,
         save_fig: bool = True,
-    ):
+    ) -> Tuple[float, float, float]:
+        """Method for evaluating probability (BDT) cut effect on efficency and purity.
+
+        Args:
+            start (float, optional): Lower range of probablity cuts. Defaults to 0.3.
+            stop (float, optional): Upper range of probablity cuts. Defaults to 0.98.
+            n_steps (int, optional): Number of probability cuts to try. Defaults to 30.
+            pid_variable_name (str, optional): Name of the variable containing true Pid. Defaults to "Complex_pid".
+            purity_cut (float, optional): Minimal purity for automatic cuts selection. Defaults to 0..
+            save_fig (bool, optional): Saves figures (BDT cut vs efficiency and purity) to file if True. Defaults to True.
+
+        Returns:
+            Tuple[float, float, float]: Probability cut for each variable.
+        """
         print(
             f"Checking efficiency and purity for {int(n_steps)} probablity cuts between {start}, and {stop}..."
         )
@@ -239,6 +253,10 @@ class ValidateModel:
         efficiencies = [efficienciess_protons, efficiencies_kaons, efficiencies_pions]
         purities_protons, purities_kaons, purities_pions = [], [], []
         purities = [purities_protons, purities_kaons, purities_pions]
+        best_cuts = [0.0, 0.0, 0.0]
+        max_efficiencies = [0.0, 0.0, 0.0]
+        max_purities = [0.0, 0.0, 0.0]
+
         for proba in probas:
             validate.xgb_preds(proba, proba, proba)
             # confusion matrix
@@ -252,9 +270,27 @@ class ValidateModel:
                 )
                 efficiencies[pid].append(efficiency)
                 purities[pid].append(purity)
+                if purity_cut > 0:
+                    # Minimal purity for automatic threshold selection.
+                    # Will choose the highest efficiency for purity above this value.
+                    # If max purity is below this value, will choose the highest purity available.
+                    if (purity > purity_cut) & (efficiency > max_efficiencies[pid]):
+                        best_cuts[pid] = proba
+                        max_efficiencies[pid] = efficiency
+                        max_purities[pid] = purity
+                    elif (purity < purity_cut) & (purity > max_purities[pid]):
+                        best_cuts[pid] = proba
+                        max_efficiencies[pid] = efficiency
+                        max_purities[pid] = purity
+
         plotting_tools.plot_efficiency_purity(probas, efficiencies, purities, save_fig)
         if save_fig:
             print("Plots ready!")
+        if purity_cut > 0:
+            print(f"Selected probaility cuts: {best_cuts}")
+            return (proba_proton, proba_kaon, proba_pion)
+        else:
+            return (-1.0, -1.0, -1.0)
 
 
 def parse_args(args: List[str]) -> argparse.Namespace:
@@ -309,11 +345,21 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         default=1,
         help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
     )
-    parser.add_argument(
+    decision_group = parser.add_mutually_exclusive_group()
+    decision_group.add_argument(
         "--interactive",
         "-i",
         action="store_true",
         help="Interactive mode allows selection of probability cuts after evaluating them.",
+    )
+    decision_group.add_argument(
+        "--automatic",
+        "-a",
+        nargs=1,
+        type=float,
+        help="""Minimal purity for automatic threshold selection. 
+        Will choose the highest efficiency for purity above this value.
+        If max purity is below this value, will choose the highest purity available.""",
     )
     return parser.parse_args()
 
@@ -333,9 +379,10 @@ if __name__ == "__main__":
     else:
         proba_proton, proba_kaon, proba_pion = -1.0, -1.0, -1.0
     n_workers = args.nworkers
+    purity_cut = args.automatic[0] or 0.0
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
-    data_file_name = LoadData.load_file_name(json_file_name, "test")
+    data_file_name = json_tools.load_file_name(json_file_name, "test")
 
     loader = LoadData(data_file_name, json_file_name, lower_p, upper_p, is_anti)
     # sigma selection
@@ -361,17 +408,18 @@ if __name__ == "__main__":
     )
     # remap Pid to match output XGBoost format
     validate.remap_names()
-    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
+    pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
 
     # # sigma selection for each particle type
     # for pid in range(0, 3):
     #     validate.sigma_selection(pid, 4)
     if args.evaluateproba is not None:
-        validate.evaluate_probas(
+        proba_proton, proba_kaon, proba_pion = validate.evaluate_probas(
             args.evaluateproba[0],
             args.evaluateproba[1],
             int(args.evaluateproba[2]),
             pid_variable_name,
+            purity_cut,
             not args.interactive,
         )
         if args.interactive:
@@ -395,8 +443,6 @@ if __name__ == "__main__":
                         "Enter the probability threshold for pion (between 0 and 1): "
                     )
                 )
-        else:
-            sys.exit(0)
     # if probabilites are set
     # apply probabilty cuts
     print(
@@ -405,7 +451,7 @@ if __name__ == "__main__":
     validate.xgb_preds(proba_proton, proba_kaon, proba_pion)
     # graphs
     # confusion matrix
-    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
+    pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
     cnf_matrix = confusion_matrix(
         validate.particles_df[pid_variable_name], validate.particles_df["xgb_preds"]
     )
@@ -461,7 +507,7 @@ if __name__ == "__main__":
     #     "bckgr (XGB-selected)"
     # )
     # mass2 plots
-    mass2_variable_name = LoadData.load_var_name(json_file_name, "mass2")
+    mass2_variable_name = json_tools.load_var_name(json_file_name, "mass2")
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 0][
             mass2_variable_name
@@ -531,7 +577,7 @@ if __name__ == "__main__":
         (-0.15, 0.15),
     )
     # pt-rapidity plots and for each rapidity
-    features_for_train = PrepareModel.load_features_for_train(json_file_name)
+    features_for_train = json_tools.load_features_for_train(json_file_name)
     for pid in range(3):
         plotting_tools.plot_before_after_variables(
             validate.particles_df, pid, pid_variable_name, features_for_train
