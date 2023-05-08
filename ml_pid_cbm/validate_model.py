@@ -270,25 +270,27 @@ class ValidateModel:
                 )
                 efficiencies[pid].append(efficiency)
                 purities[pid].append(purity)
-                if purity_cut > 0:
+                if purity_cut > 0.0:
                     # Minimal purity for automatic threshold selection.
                     # Will choose the highest efficiency for purity above this value.
+                    if purity >= purity_cut:
+                        if efficiency > max_efficiencies[pid]:
+                            best_cuts[pid] = proba
+                            max_efficiencies[pid] = efficiency
+                            max_purities[pid] = purity
                     # If max purity is below this value, will choose the highest purity available.
-                    if (purity > purity_cut) & (efficiency > max_efficiencies[pid]):
-                        best_cuts[pid] = proba
-                        max_efficiencies[pid] = efficiency
-                        max_purities[pid] = purity
-                    elif (purity < purity_cut) & (purity > max_purities[pid]):
-                        best_cuts[pid] = proba
-                        max_efficiencies[pid] = efficiency
-                        max_purities[pid] = purity
+                    else:
+                        if purity > max_purities[pid]:
+                            best_cuts[pid] = proba
+                            max_efficiencies[pid] = efficiency
+                            max_purities[pid] = purity
 
         plotting_tools.plot_efficiency_purity(probas, efficiencies, purities, save_fig)
         if save_fig:
             print("Plots ready!")
         if purity_cut > 0:
             print(f"Selected probaility cuts: {best_cuts}")
-            return (proba_proton, proba_kaon, proba_pion)
+            return (best_cuts[0], best_cuts[1], best_cuts[2])
         else:
             return (-1.0, -1.0, -1.0)
 
@@ -357,7 +359,7 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         "-a",
         nargs=1,
         type=float,
-        help="""Minimal purity for automatic threshold selection. 
+        help="""Minimal purity for automatic threshold selection (in percent) e.g., 90.
         Will choose the highest efficiency for purity above this value.
         If max purity is below this value, will choose the highest purity available.""",
     )
@@ -370,6 +372,7 @@ if __name__ == "__main__":
     # config  arguments to be loaded from args
     json_file_name = args.config[0]
     model_name = args.modelname[0]
+    proba_proton, proba_kaon, proba_pion = -1.0, -1.0, -1.0
     if args.probabilitycuts is not None:
         proba_proton, proba_kaon, proba_pion = (
             args.probabilitycuts[0],
