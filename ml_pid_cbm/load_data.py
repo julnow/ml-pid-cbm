@@ -92,7 +92,7 @@ class LoadData:
                 json_file_name,
             )
         print(
-            f"Number of protons: {len(protons)}\nNumber of kaons: {len(kaons)}\nNumber of pions: {len(pions)}"
+            f"\nNumber of protons: {len(protons)}\nNumber of kaons: {len(kaons)}\nNumber of pions: {len(pions)}"
         )
         return (protons, kaons, pions)
 
@@ -163,7 +163,7 @@ class LoadData:
             model_handler=model_handler,
             output_margin=False,
         )
-        print(f"Loading tree from {data_file_name}...")
+        print(f"\nLoading tree from {data_file_name}...")
         return tree_handler
 
     def clean_tree(self, json_file_name: str = None) -> str:

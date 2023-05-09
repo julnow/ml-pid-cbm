@@ -148,7 +148,7 @@ def output_train_test_plot(
         False,
         leg_labels,
         logscale=logscale,
-        density=True,
+        density=False, #if true histograms are normalized
     )
 
     for idx, fig in enumerate(ml_out_fig):

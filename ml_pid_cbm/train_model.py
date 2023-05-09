@@ -145,7 +145,6 @@ if __name__ == "__main__":
     data_file_name = json_tools.load_file_name(json_file_name, "training")
 
     # loading data
-    print(f"\nLoading data from {data_file_name}\n")
     loader = LoadData(
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
@@ -156,13 +155,15 @@ if __name__ == "__main__":
     df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
     tree_handler.set_data_frame(df_with_v_tof)
     ####################################################
-    # # TODO fix the data, here we narrow sigma selection for protons
-    # if upper_p_cut <= 3:
-    #     NSIGMA_PROTON = 2
-    # else:
-    #     NSIGMA_PROTON = 3
+    # TODO fix the data, here we narrow sigma selection for protons
+    NSIGMA_PROTON = 2 if upper_p_cut <= 3 else 3
+    NSIGMA_KAON = 3
+    NSIGMA_PION = 3
     protons, kaons, pions = loader.get_protons_kaons_pions(
-        tree_handler  # , nsigma_proton=NSIGMA_PROTON
+        tree_handler,
+        nsigma_proton=NSIGMA_PROTON,
+        nsigma_kaon=NSIGMA_KAON,
+        nsigma_pion=NSIGMA_PION,
     )
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
     pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
@@ -176,11 +177,18 @@ if __name__ == "__main__":
     copy2(json_file_path, os.getcwd())
     # pretraining plots
     if create_plots:
-        print("Creating pre-training plots")
-        plotting_tools.tof_plot(protons, json_file_name, "protons", save_fig=save_plots)
-        plotting_tools.tof_plot(kaons, json_file_name, "kaons", save_fig=save_plots)
+        print("Creating pre-training plots...")
         plotting_tools.tof_plot(
-            pions, json_file_name, "pions, muons, electrons", save_fig=save_plots
+            protons, json_file_name, f"protons ({NSIGMA_PROTON}$\sigma$)", save_fig=save_plots
+        )
+        plotting_tools.tof_plot(
+            kaons, json_file_name, f"kaons ({NSIGMA_KAON}$\sigma$)", save_fig=save_plots
+        )
+        plotting_tools.tof_plot(
+            pions,
+            json_file_name,
+            f"pions, muons, electrons ({NSIGMA_PION}$\sigma$)",
+            save_fig=save_plots,
         )
         vars_to_draw = protons.get_var_names()
         plotting_tools.var_distributions_plot(
@@ -195,7 +203,7 @@ if __name__ == "__main__":
     del protons, kaons, pions
     gc.collect()
     features_for_train = json_tools.load_features_for_train(json_file_name)
-    print("\nPreparing model handler\n")
+    print("\nPreparing model handler...")
     model_hdl, study = model_hdl.prepare_model_handler(train_test_data=train_test_data)
     if create_plots and optimize_hyper_params:
         plotting_tools.opt_history_plot(study, save_plots)
@@ -213,7 +221,11 @@ if __name__ == "__main__":
         data_file_name_test = json_tools.load_file_name(json_file_name, "test")
 
         loader_test = LoadData(
-            data_file_name_test, json_file_name, lower_p_cut, upper_p_cut, anti_particles
+            data_file_name_test,
+            json_file_name,
+            lower_p_cut,
+            upper_p_cut,
+            anti_particles,
         )
         tree_handler_test = loader_test.load_tree(max_workers=n_workers)
         # temporary solution for dealing with v_tof = l/t
@@ -239,12 +251,10 @@ if __name__ == "__main__":
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
         plotting_tools.output_train_test_plot(
-            train.model_hdl, train_test_data, save_fig=save_plots, logscale=False
+            train.model_hdl, train_test_data, save_fig=save_plots, logscale=True
         )
 
-        plotting_tools.roc_plot(
-            train_test_data[3], y_pred_test, save_fig=save_plots
-        )
+        plotting_tools.roc_plot(train_test_data[3], y_pred_test, save_fig=save_plots)
         # shapleys for each class
         feature_names = [item.replace("Complex_", "") for item in features_for_train]
         plotting_tools.plot_shap_summary(
