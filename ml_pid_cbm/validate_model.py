@@ -373,15 +373,13 @@ if __name__ == "__main__":
     json_file_name = args.config[0]
     model_name = args.modelname[0]
     proba_proton, proba_kaon, proba_pion = (
-        args.probabilitycuts[0],
-        args.probabilitycuts[1],
-        args.probabilitycuts[2]
+        (args.probabilitycuts[0], args.probabilitycuts[1], args.probabilitycuts[2])
         if args.probabilitycuts is not None
-        else (-1.0, -1.0, -1.0),
+        else (-1.0, -1.0, -1.0)
     )
 
     n_workers = args.nworkers
-    purity_cut = args.automatic[0] if args.automatics is not None else 0.0
+    purity_cut = args.automatic[0] if args.automatic is not None else 0.0
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
     data_file_name = json_tools.load_file_name(json_file_name, "test")
@@ -503,13 +501,19 @@ if __name__ == "__main__":
         json_file_name,
         "pions, muons, electrons (XGB-selected)",
     )
-    # plotting_tools.tof_plot(
-    #     validate.particles_df[validate.particles_df["xgb_preds"] == 3],
-    #     json_file_name,
-    #     "bckgr (XGB-selected)"
-    # )
+    try:
+        plotting_tools.tof_plot(
+            validate.particles_df[validate.particles_df["xgb_preds"] == 3],
+            json_file_name,
+            "bckgr (XGB-selected)",
+        )
+    except:
+        print("no tof plot for bckgr")
     # mass2 plots
     mass2_variable_name = json_tools.load_var_name(json_file_name, "mass2")
+    protons_range = (-0.2, 1.8)
+    kaons_range = (-0.2, 0.6)
+    pions_range = (-0.3, 0.3)
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 0][
             mass2_variable_name
@@ -518,14 +522,14 @@ if __name__ == "__main__":
             mass2_variable_name
         ],
         "Protons",
-        (-0.1, 1.5),
+        protons_range,
     )
     plotting_tools.plot_all_particles_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 0],
         mass2_variable_name,
         pid_variable_name,
         "Protons",
-        (-0.1, 1.5),
+        protons_range,
     )
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 1][
@@ -535,14 +539,14 @@ if __name__ == "__main__":
             mass2_variable_name
         ],
         "Kaons",
-        (-0.1, 0.4),
+        kaons_range,
     )
     plotting_tools.plot_all_particles_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 1],
         mass2_variable_name,
         pid_variable_name,
         "Kaons",
-        (-0.1, 0.4),
+        kaons_range,
     )
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 2][
@@ -552,14 +556,14 @@ if __name__ == "__main__":
             mass2_variable_name
         ],
         "Pions (& electrons, muons)",
-        (-0.15, 0.15),
+        pions_range,
     )
     plotting_tools.plot_all_particles_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 2],
         mass2_variable_name,
         pid_variable_name,
         "Pions (& electrons, muons)",
-        (-0.15, 0.15),
+        pions_range,
     )
     plotting_tools.plot_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 3][
@@ -569,18 +573,18 @@ if __name__ == "__main__":
             mass2_variable_name
         ],
         "Background",
-        (-0.15, 0.15),
+        pions_range,
     )
     plotting_tools.plot_all_particles_mass2(
         validate.particles_df[validate.particles_df["xgb_preds"] == 3],
         mass2_variable_name,
         pid_variable_name,
         "Background",
-        (-0.15, 0.15),
+        pions_range,
     )
     # pt-rapidity plots and for each rapidity
     features_for_train = json_tools.load_features_for_train(json_file_name)
-    for pid in range(3):
+    for pid in range(4):
         plotting_tools.plot_before_after_variables(
             validate.particles_df, pid, pid_variable_name, features_for_train
         )
