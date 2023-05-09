@@ -191,9 +191,6 @@ if __name__ == "__main__":
             save_fig=save_plots,
         )
         vars_to_draw = protons.get_var_names()
-        plotting_tools.var_distributions_plot(
-            vars_to_draw, [protons, kaons, pions], save_fig=save_plots
-        )
         plotting_tools.correlations_plot(
             vars_to_draw, [protons, kaons, pions], save_fig=save_plots
         )

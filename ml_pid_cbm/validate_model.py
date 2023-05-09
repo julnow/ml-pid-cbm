@@ -583,10 +583,54 @@ if __name__ == "__main__":
         pions_range,
     )
     # pt-rapidity plots and for each rapidity
-    features_for_train = json_tools.load_features_for_train(json_file_name)
+    vars_to_draw = [
+        "Complex_E",
+        "Complex_chi2_ov_ndf_vtx",
+        "Complex_eta",
+        "Complex_l",
+        "Complex_t",
+        "Complex_mass2",
+        "Complex_p",
+        "Complex_pT",
+        "Complex_phi",
+        "Complex_pT",
+        "Complex_phi",
+        "Complex_rapidity",
+        "Complex_sim_p",
+        "Complex_sim_pT",
+        "Complex_sim_phi",
+        "Complex_vtx_chi2",
+        "Complex_M",
+        "Complex_v_tof",
+        "xgb_preds",
+    ]
+    particle_names = ["protons", "kaons", "pions", "bckgr"]
     for pid in range(4):
-        plotting_tools.plot_before_after_variables(
-            validate.particles_df, pid, pid_variable_name, features_for_train
+        plotting_tools.var_distributions_plot(
+            vars_to_draw,
+            [
+                validate.particles_df[
+                    (validate.particles_df[pid_variable_name] == pid)
+                ],
+                validate.particles_df[
+                    (
+                        (validate.particles_df[pid_variable_name] == pid)
+                        & (validate.particles_df["xgb_preds"] == pid)
+                    )
+                ],
+                validate.particles_df[
+                    (
+                        (validate.particles_df[pid_variable_name] != pid)
+                        & (validate.particles_df["xgb_preds"] == pid)
+                    )
+                ],
+            ],
+            [
+                f"true MC {particle_names[pid]}",
+                f"true selected {particle_names[pid]}",
+                f"false selected {particle_names[pid]}",
+            ],
+            filename=f"vars_dist_{particle_names[pid]}",
         )
         plotting_tools.plot_eff_pT_rap(validate.particles_df, pid)
         plotting_tools.plot_pt_rapidity(validate.particles_df, pid)
