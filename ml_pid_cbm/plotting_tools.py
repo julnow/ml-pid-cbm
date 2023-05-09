@@ -63,11 +63,12 @@ def tof_plot(
     # savefig
     if save_fig:
         file_name = particles_title.replace(" ", "_")
-        plt.savefig(f"{file_name}.png")
-        plt.savefig(f"{file_name}.pdf")
+        plt.savefig(f"tof_plot_{file_name}.png")
+        plt.savefig(f"tof_plot_{file_name}.pdf")
         plt.close()
     else:
         plt.show()
+    return fig
 
 
 def var_distributions_plot(
@@ -75,6 +76,7 @@ def var_distributions_plot(
     data_list: List[TreeHandler],
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
+    filename: str = "vars_disitributions"
 ):
     plot_distr(
         data_list,
@@ -87,8 +89,8 @@ def var_distributions_plot(
         grid=False,
     )
     if save_fig:
-        plt.savefig("vars_disitributions.png")
-        plt.savefig("vars_disitributions.pdf")
+        plt.savefig(f"{filename}.png")
+        plt.savefig(f"{filename}.pdf")
         plt.close()
     else:
         plt.show()
@@ -334,13 +336,15 @@ def plot_all_particles_mass2(
 
 def plot_eff_pT_rap(
     df: pd.DataFrame,
-    pid: float,
+    pid: int,
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
     pT_var_name: str = "Complex_pT",
     ranges=[[0, 5], [0, 3]],
     nbins=50,
     save_fig: bool = True,
+    particle_names: List[str] = ["protons", "kaons", "pions", "bckgr"]
+
 ):
     df_true = df[(df[pid_var_name] == pid)]  # simulated
     df_reco = df[(df["xgb_preds"] == pid)]  # reconstructed by xgboost
@@ -374,8 +378,8 @@ def plot_eff_pT_rap(
     plt.ylabel("$p_T$ (GeV/c)")
     plt.tight_layout()
     if save_fig:
-        plt.savefig(f"plot_eff_pT_rap_ID={pid}.png")
-        plt.savefig(f"plot_eff_pT_rap_ID={pid}.pdf")
+        plt.savefig(f"eff_pT_rap_{particle_names[pid]}.png")
+        plt.savefig(f"eff_pT_rap_{particle_names[pid]}.pdf")
         plt.close()
     else:
         plt.show()
@@ -383,13 +387,14 @@ def plot_eff_pT_rap(
 
 def plot_pt_rapidity(
     df: pd.DataFrame,
-    pid: float,
+    pid: int,
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
     pT_var_name: str = "Complex_pT",
     ranges=[[0, 5], [0, 3]],
     nbins=50,
     save_fig: bool = True,
+    particle_names: List[str] = ["protons", "kaons", "pions", "bckgr"]
 ):
     df_true = df[(df[pid_var_name] == pid)]  # simulated
 
@@ -397,7 +402,7 @@ def plot_pt_rapidity(
     y = np.array(df_true[pT_var_name])
 
     fig = plt.figure(figsize=(8, 10), dpi=300)
-    plt.title(f"$p_T$-rapidity graph for all simulated pid = {pid}")
+    plt.title(f"$p_T$-rapidity graph for all simulated {particle_names[pid]}")
 
     true, yedges, xedges = np.histogram2d(x, y, bins=nbins, range=ranges)
     true[true == 0] = np.nan  # show zeros as white
@@ -416,8 +421,8 @@ def plot_pt_rapidity(
     plt.ylabel("$p_T$ (GeV/c)")
     plt.tight_layout()
     if save_fig:
-        plt.savefig(f"plot_pt_rapidity_ID={pid}.png")
-        plt.savefig(f"plot_pt_rapidity_ID={pid}.pdf")
+        plt.savefig(f"plot_pt_rapidity_{particle_names[pid]}.png")
+        plt.savefig(f"plot_pt_rapidity_{particle_names[pid]}.pdf")
         plt.close()
     else:
         plt.show()
@@ -543,14 +548,14 @@ def plot_before_after_variables(
         if log_yscale:
             ax.set_yscale("log")
         ax.legend((leg1, leg2), fontsize=15, loc="upper right")
-        ax.set_title(f"{variable_name} before and after XGB selection", fontsize=15)
+        ax.set_title(f"{variable_name} before and after XGB selection for pid={pid}", fontsize=15)
         return fig
 
     for training_variable in training_variables:
         plot = variable_plot(df_true, df_reco, training_variable, log_yscale)
         if save_fig:
             plot.savefig(f"{training_variable}_before_after_pid_{pid}.png")
-            plot.savefig(f"{training_variable}_before_after.pdf")
+            plot.savefig(f"{training_variable}_before_after_{pid}.pdf")
             plt.close()
 
         else:
@@ -562,6 +567,7 @@ def plot_efficiency_purity(
     efficiencies: List[List[float]],
     purities: List[List[float]],
     save_fig: bool = True,
+    particle_names: List[str] = ["protons", "kaons", "pions"]
 ):
     for i, (eff, pur) in enumerate(zip(efficiencies, purities)):
         if save_fig:
@@ -574,13 +580,13 @@ def plot_efficiency_purity(
         ax.set_xlabel("BDT cut")
         ax.set_ylabel("\% ")
         ax.legend(loc="upper right")
-        ax.set_title(f"Efficiency and purity in function of BDT cut for ID = {i}")
+        ax.set_title(f"Efficiency and purity in function of BDT cut for {particle_names[i]}")
         ax.grid(which="major", linestyle="-")
         ax.minorticks_on()
         ax.grid(which="minor", linestyle="--")
         if save_fig:
-            fig.savefig(f"efficiency_purity_id_{i}.png")
-            fig.savefig(f"efficiency_purity_id_{i}.pdf")
+            fig.savefig(f"efficiency_purity__{particle_names[i]}.png")
+            fig.savefig(f"efficiency_purity_id_{particle_names[i]}.pdf")
             plt.close()
         else:
             plt.show()
