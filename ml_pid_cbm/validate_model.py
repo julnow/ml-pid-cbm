@@ -372,17 +372,16 @@ if __name__ == "__main__":
     # config  arguments to be loaded from args
     json_file_name = args.config[0]
     model_name = args.modelname[0]
-    proba_proton, proba_kaon, proba_pion = -1.0, -1.0, -1.0
-    if args.probabilitycuts is not None:
-        proba_proton, proba_kaon, proba_pion = (
-            args.probabilitycuts[0],
-            args.probabilitycuts[1],
-            args.probabilitycuts[2],
-        )
-    else:
-        proba_proton, proba_kaon, proba_pion = -1.0, -1.0, -1.0
+    proba_proton, proba_kaon, proba_pion = (
+        args.probabilitycuts[0],
+        args.probabilitycuts[1],
+        args.probabilitycuts[2]
+        if args.probabilitycuts is not None
+        else (-1.0, -1.0, -1.0),
+    )
+
     n_workers = args.nworkers
-    purity_cut = args.automatic[0] or 0.0
+    purity_cut = args.automatic[0] if args.automatics is not None else 0.0
     lower_p, upper_p, is_anti = ValidateModel.parse_model_name(model_name)
     # loading test data
     data_file_name = json_tools.load_file_name(json_file_name, "test")

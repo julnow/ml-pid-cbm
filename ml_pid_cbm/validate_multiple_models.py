@@ -72,7 +72,7 @@ if __name__ == "__main__":
     copy2(json_file_path, os.getcwd())
     # graphs
     # confusion matrix
-    pid_variable_name = LoadData.load_var_name(json_file_name, "pid")
+    pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
     cnf_matrix = confusion_matrix(
         all_particles_df[pid_variable_name], all_particles_df["xgb_preds"]
     )
