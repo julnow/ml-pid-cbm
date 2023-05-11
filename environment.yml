@@ -13,3 +13,4 @@ dependencies:
     - hipe4ml
     - optuna
     - fasttreeshap
+    - kaleido
