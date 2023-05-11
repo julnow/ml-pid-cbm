@@ -13,9 +13,18 @@ for dir in model_*
             pdfjam shap_*.pdf --nup 2x2 --landscape --outfile merge/shap.pdf
             cp roc_plot.pdf merge/roc_plot.pdf
             pdfjam tof_plot_*.pdf --nup 4x3 --landscape --outfile merge/tof.pdf
+            pdfjam mass2*.pdf --nup 4x2 --landscape --outfile merge/mass2.pdf
             cp vars_dist*.pdf merge/
             cd ../  
             pdfunite $dir/merge/*.pdf pdfs/$dir.pdf 
        fi
 done
-pdfunite all_models/*.pdf pdfs/all_models.pdf
+#for all models
+cd all_models
+mkdir -p merge
+pdfjam confusion_*.pdf --nup 2x1 --landscape --outfile merge/cm.pdf
+pdfjam eff_pT*.pdf plot_pt*.pdf --landscape --nup 4x2  --outfile merge/pT.pdf
+pdfjam mass2*.pdf --nup 4x2 --landscape --outfile merge/mass2.pdf
+pdfjam tof_plot_*.pdf --nup 4x3 --landscape --outfile merge/tof.pdf
+cd ../  
+pdfunite all_models/merge/*.pdf pdfs/all_models.pdf 
