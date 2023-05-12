@@ -8,6 +8,8 @@ dependencies:
   - numpy
   - plotly
   - py-xgboost
+  - python-kaleido
+  - pip
   - pip:
     - hipe4ml
     - optuna
