@@ -149,16 +149,9 @@ if __name__ == "__main__":
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
     tree_handler = loader.load_tree(max_workers=n_workers)
-    # temporary solution for dealing with v_tof = l/t
-    #################################################
-    df_with_v_tof = tree_handler.get_data_frame()
-    df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
-    tree_handler.set_data_frame(df_with_v_tof)
-    ####################################################
-    # TODO fix the data, here we narrow sigma selection for protons
-    NSIGMA_PROTON = 2 if upper_p_cut <= 3 else 3
-    NSIGMA_KAON = 3
-    NSIGMA_PION = 3
+    NSIGMA_PROTON = 5
+    NSIGMA_KAON = 5
+    NSIGMA_PION = 5
     protons, kaons, pions = loader.get_protons_kaons_pions(
         tree_handler,
         nsigma_proton=NSIGMA_PROTON,
@@ -166,7 +159,6 @@ if __name__ == "__main__":
         nsigma_pion=NSIGMA_PION,
     )
     print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
-    pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
     del tree_handler
     gc.collect()
     # change location to specific folder for this model
@@ -179,7 +171,10 @@ if __name__ == "__main__":
     if create_plots:
         print("Creating pre-training plots...")
         plotting_tools.tof_plot(
-            protons, json_file_name, f"protons ({NSIGMA_PROTON}$\sigma$)", save_fig=save_plots
+            protons,
+            json_file_name,
+            f"protons ({NSIGMA_PROTON}$\sigma$)",
+            save_fig=save_plots,
         )
         plotting_tools.tof_plot(
             kaons, json_file_name, f"kaons ({NSIGMA_KAON}$\sigma$)", save_fig=save_plots
@@ -208,7 +203,8 @@ if __name__ == "__main__":
     # train model
     train = TrainModel(model_hdl, model_name)
     sample_weights = compute_sample_weight(
-        class_weight="balanced", y=train_test_data[1]  # labels of training dataset
+        class_weight=None,  # class_weight="balanced" deleted for now
+        y=train_test_data[1]
     )
     train.train_model_handler(train_test_data, sample_weights)
     print("\nModel trained!")
@@ -216,7 +212,6 @@ if __name__ == "__main__":
     # loading validation dataset as test dataset for pos-training plots
     if use_validation:
         data_file_name_test = json_tools.load_file_name(json_file_name, "test")
-
         loader_test = LoadData(
             data_file_name_test,
             json_file_name,
@@ -225,12 +220,6 @@ if __name__ == "__main__":
             anti_particles,
         )
         tree_handler_test = loader_test.load_tree(max_workers=n_workers)
-        # temporary solution for dealing with v_tof = l/t
-        #################################################
-        df_with_v_tof = tree_handler_test.get_data_frame()
-        df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
-        tree_handler_test.set_data_frame(df_with_v_tof)
-        ####################################################
         protons_test, kaons_test, pions_test = loader_test.get_protons_kaons_pions(
             tree_handler_test
         )

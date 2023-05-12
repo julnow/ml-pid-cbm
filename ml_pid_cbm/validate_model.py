@@ -393,15 +393,7 @@ if __name__ == "__main__":
     os.chdir(f"{model_name}")
     model_hdl = ModelHandler()
     model_hdl.load_model_handler(model_name)
-    # temporary solution for dealing with v_tof = l/t
-    #################################################
-    test_particles = loader.load_tree(max_workers=n_workers)
-    df_with_v_tof = test_particles.get_data_frame()
-    df_with_v_tof["Complex_v_tof"] = df_with_v_tof.eval("Complex_l / Complex_t")
-    test_particles.set_data_frame(df_with_v_tof)
-    test_particles.apply_model_handler(model_hdl)
-    ####################################################
-    # test_particles = loader.load_tree(model_handler=model_hdl, max_workers=n_workers)
+    test_particles = loader.load_tree(model_handler=model_hdl, max_workers=n_workers)
     # validate model object
     validate = ValidateModel(
         lower_p, upper_p, is_anti, json_file_name, test_particles.get_data_frame()
