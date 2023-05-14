@@ -356,7 +356,7 @@ def plot_eff_pT_rap(
     ye = np.array(df_reco[pT_var_name])
 
     fig = plt.figure(figsize=(8, 10), dpi=300)
-    plt.title(f"$p_T$-rapidity efficiency for all selected for pid = {pid}")
+    plt.title(f"$p_T$-rapidity efficiency for all selected {particle_names[pid]}")
     true, yedges, xedges = np.histogram2d(x, y, bins=nbins, range=ranges)
     reco, _, _ = np.histogram2d(xe, ye, bins=(yedges, xedges), range=ranges)
 

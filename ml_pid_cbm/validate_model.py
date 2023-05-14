@@ -14,7 +14,6 @@ from sklearn.metrics import confusion_matrix
 import plotting_tools
 from load_data import LoadData
 from particles_id import ParticlesId as Pid
-from prepare_model import PrepareModel
 import json_tools
 
 
@@ -36,6 +35,14 @@ class ValidateModel:
         self.anti_particles = anti_particles
         self.json_file_name = json_file_name
         self.particles_df = particles_df
+        self.pid_variable_name = json_tools.load_var_name(self.json_file_name, "pid")
+        self.mass2_variable_name = json_tools.load_var_name(
+            self.json_file_name, "mass2"
+        )
+        self.classes_names = ["protons", "kaons", "pions", "bckgr"]
+
+    def get_n_classes(self):
+        return len(self.classes_names)
 
     def xgb_preds(self, proba_proton: float, proba_kaon: float, proba_pion: float):
         """Gets particle type as selected by xgboost model if above probability threshold.
@@ -66,7 +73,6 @@ class ValidateModel:
         Protons: 0; Kaons: 1; Pions, Electrons, Muons: 2; Other: 3
 
         """
-        pid_variable_name = json_tools.load_var_name(self.json_file_name, "pid")
         df = self.particles_df
         if self.anti_particles:
             df[pid_variable_name] = (
@@ -87,8 +93,8 @@ class ValidateModel:
                 .astype(float)
             )
         else:
-            df[pid_variable_name] = (
-                df[pid_variable_name]
+            df[self.pid_variable_name] = (
+                df[self.pid_variable_name]
                 .map(
                     defaultdict(
                         lambda: 3.0,
@@ -121,14 +127,12 @@ class ValidateModel:
             info (bool, optional): _description_. Defaults to False.
         """
         df = self.particles_df
-        pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
         # for selected pid
-        mass2_variable_name = json_tools.load_var_name(json_file_name, "mass2")
-        mean = df[df[pid_variable_name] == pid][mass2_variable_name].mean()
-        std = df[df[pid_variable_name] == pid][mass2_variable_name].std()
-        outside_sigma = (df[pid_variable_name] == pid) & (
-            (df[mass2_variable_name] < (mean - nsigma * std))
-            | (df[mass2_variable_name] > (mean + nsigma * std))
+        mean = df[df[self.pid_variable_name] == pid][self.mass2_variable_name].mean()
+        std = df[df[self.pid_variable_name] == pid][self.mass2_variable_name].std()
+        outside_sigma = (df[self.pid_variable_name] == pid) & (
+            (df[self.mass2_variable_name] < (mean - nsigma * std))
+            | (df[self.mass2_variable_name] > (mean + nsigma * std))
         )
         df_sigma_selected = df[~outside_sigma]
         if info:
@@ -147,7 +151,6 @@ class ValidateModel:
         self,
         cm: np.ndarray,
         pid: float,
-        pid_variable_name: str,
         txt_tile: io.TextIOWrapper = None,
         dataframe: pd.DataFrame = None,
         print_output: bool = True,
@@ -167,7 +170,7 @@ class ValidateModel:
             Tuple[float, float]: Tuple with efficiency and purity
         """
         df = dataframe or self.particles_df
-        all_simulated_signal = len(df.loc[df[pid_variable_name] == pid])
+        all_simulated_signal = len(df.loc[df[self.pid_variable_name] == pid])
         true_signal = cm[pid][pid]
         false_signal = 0
         for i, row in enumerate(cm):
@@ -191,44 +194,11 @@ class ValidateModel:
             txt_tile.writelines(stats)
         return (efficiency, purity)
 
-    @staticmethod
-    def parse_model_name(
-        name: str,
-        pattern: str = r"model_([\d.]+)_([\d.]+)_(anti)|model_([\d.]+)_([\d.]+)_([a-zA-Z]+)",
-    ) -> Tuple[float, float, bool]:
-        """Parser model name to get info about lower momentum cut, upper momentum cut, and if model is trained for anti_particles.
-
-        Args:
-            name (str): Name of the model.
-            pattern (_type_, optional): Pattern of model name.
-             Defaults to r"model_([\d.]+)_([\d.]+)_(anti)|model_([\d.]+)_([\d.]+)_([a-zA-Z]+)".
-
-        Raises:
-            ValueError: Raises error if model name incorrect.
-
-        Returns:
-            Tuple[float, float, bool]: Tuple containing lower_p_cut, upper_p_cut, is_anti
-        """
-        match = re.match(pattern, name)
-        if match:
-            if match.group(3):
-                lower_p_cut = float(match.group(1))
-                upper_p_cut = float(match.group(2))
-                is_anti = True
-            else:
-                lower_p_cut = float(match.group(4))
-                upper_p_cut = float(match.group(5))
-                is_anti = False
-        else:
-            raise ValueError("Incorrect model name, regex not found.")
-        return (lower_p_cut, upper_p_cut, is_anti)
-
     def evaluate_probas(
         self,
         start: float = 0.3,
         stop: float = 0.98,
         n_steps: int = 30,
-        pid_variable_name: str = "Complex_pid",
         purity_cut: float = 0.0,
         save_fig: bool = True,
     ) -> Tuple[float, float, float]:
@@ -261,12 +231,12 @@ class ValidateModel:
             validate.xgb_preds(proba, proba, proba)
             # confusion matrix
             cnf_matrix = confusion_matrix(
-                self.particles_df[pid_variable_name],
+                self.particles_df[self.pid_variable_name],
                 self.particles_df["xgb_preds"],
             )
-            for pid in range(0, 3):
+            for pid in range(self.get_n_classes() - 1):
                 efficiency, purity = validate.efficiency_stats(
-                    cnf_matrix, pid, pid_variable_name, print_output=False
+                    cnf_matrix, pid, print_output=False
                 )
                 efficiencies[pid].append(efficiency)
                 purities[pid].append(purity)
@@ -293,6 +263,145 @@ class ValidateModel:
             return (best_cuts[0], best_cuts[1], best_cuts[2])
         else:
             return (-1.0, -1.0, -1.0)
+
+    def confusion_matrix_and_stats(
+        self, efficiency_filename: str = "efficiency_stats.txt"
+    ):
+        """
+        Generates confusion matrix and efficiency/purity stats.
+        """
+        cnf_matrix = confusion_matrix(
+            self.particles_df[self.pid_variable_name], self.particles_df["xgb_preds"]
+        )
+        plotting_tools.plot_confusion_matrix(cnf_matrix)
+        plotting_tools.plot_confusion_matrix(cnf_matrix, normalize=True)
+        txt_file = open(efficiency_filename, "w+")
+        for pid in range(self.get_n_classes() - 1):
+            validate.efficiency_stats(cnf_matrix, pid, pid_variable_name, txt_file)
+        txt_file.close()
+
+    def generate_plots(self):
+        """
+        Generate tof, mass2, vars, and pT-rapidity plots
+        """
+        self._tof_plots()
+        self._mass2_plots()
+        self._vars_distributions_plots()
+
+    def _tof_plots(self):
+        """
+        Generates tof plots.
+        """
+        for pid, particle_name in enumerate(self.classes_names):
+            # simulated:
+            plotting_tools.tof_plot(
+                self.particles_df[self.particles_df[self.pid_variable_name] == pid],
+                self.json_file_name,
+                f"{particle_name} (all simulated)",
+            )
+            # xgb selected
+            try:
+                plotting_tools.tof_plot(
+                    self.particles_df[self.particles_df["xgb_preds"] == pid],
+                    self.json_file_name,
+                    f"{particle_name} (XGB-selected)",
+                )
+            except ValueError:
+                print(f"No XGB-selected {particle_name}s")
+
+    def _mass2_plots(self):
+        """
+        Generates mass2 plots.
+        """
+        protons_range = (-0.2, 1.8)
+        kaons_range = (-0.2, 0.6)
+        pions_range = (-0.3, 0.3)
+        ranges = [protons_range, kaons_range, pions_range, pions_range]
+        for pid, particle_name in enumerate(self.classes_names):
+            plotting_tools.plot_mass2(
+                self.particles_df[self.particles_df["xgb_preds"] == pid][
+                    self.mass2_variable_name
+                ],
+                self.particles_df[self.particles_df[self.pid_variable_name] == pid][
+                    self.mass2_variable_name
+                ],
+                particle_name,
+                ranges[pid],
+            )
+            plotting_tools.plot_all_particles_mass2(
+                self.particles_df[self.particles_df["xgb_preds"] == 0],
+                self.mass2_variable_name,
+                self.pid_variable_name,
+                particle_name,
+                ranges[pid],
+            )
+
+    def _vars_distributions_plots(self):
+        """
+        Generates distributions of variables and pT-rapidity graphs.
+        """
+        vars_to_draw = json_tools.load_vars_to_draw(self.json_file_name)
+        for pid, particle_name in enumerate(self.classes_names):
+            plotting_tools.var_distributions_plot(
+                vars_to_draw,
+                [
+                    self.particles_df[
+                        (self.particles_df[self.pid_variable_name] == pid)
+                    ],
+                    self.particles_df[
+                        (
+                            (self.particles_df[self.pid_variable_name] == pid)
+                            & (self.particles_df["xgb_preds"] == pid)
+                        )
+                    ],
+                    self.particles_df[
+                        (
+                            (self.particles_df[self.pid_variable_name] != pid)
+                            & (self.particles_df["xgb_preds"] == pid)
+                        )
+                    ],
+                ],
+                [
+                    f"true MC {particle_name}",
+                    f"true selected {particle_name}",
+                    f"false selected {particle_name}",
+                ],
+                filename=f"vars_dist_{particle_name}",
+            )
+            plotting_tools.plot_eff_pT_rap(self.particles_df, pid)
+            plotting_tools.plot_pt_rapidity(self.particles_df, pid)
+
+    @staticmethod
+    def parse_model_name(
+        name: str,
+        pattern: str = r"model_([\d.]+)_([\d.]+)_(anti)|model_([\d.]+)_([\d.]+)_([a-zA-Z]+)",
+    ) -> Tuple[float, float, bool]:
+        """Parser model name to get info about lower momentum cut, upper momentum cut, and if model is trained for anti_particles.
+
+        Args:
+            name (str): Name of the model.
+            pattern (_type_, optional): Pattern of model name.
+             Defaults to r"model_([\d.]+)_([\d.]+)_(anti)|model_([\d.]+)_([\d.]+)_([a-zA-Z]+)".
+
+        Raises:
+            ValueError: Raises error if model name incorrect.
+
+        Returns:
+            Tuple[float, float, bool]: Tuple containing lower_p_cut, upper_p_cut, is_anti
+        """
+        match = re.match(pattern, name)
+        if match:
+            if match.group(3):
+                lower_p_cut = float(match.group(1))
+                upper_p_cut = float(match.group(2))
+                is_anti = True
+            else:
+                lower_p_cut = float(match.group(4))
+                upper_p_cut = float(match.group(5))
+                is_anti = False
+        else:
+            raise ValueError("Incorrect model name, regex not found.")
+        return (lower_p_cut, upper_p_cut, is_anti)
 
 
 def parse_args(args: List[str]) -> argparse.Namespace:
@@ -363,7 +472,7 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         Will choose the highest efficiency for purity above this value.
         If max purity is below this value, will choose the highest purity available.""",
     )
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 if __name__ == "__main__":
@@ -401,16 +510,12 @@ if __name__ == "__main__":
     # remap Pid to match output XGBoost format
     validate.remap_names()
     pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
-
-    # # sigma selection for each particle type
-    # for pid in range(0, 3):
-    #     validate.sigma_selection(pid, 4)
+    # set probability cuts
     if args.evaluateproba is not None:
         proba_proton, proba_kaon, proba_pion = validate.evaluate_probas(
             args.evaluateproba[0],
             args.evaluateproba[1],
             int(args.evaluateproba[2]),
-            pid_variable_name,
             purity_cut,
             not args.interactive,
         )
@@ -442,189 +547,8 @@ if __name__ == "__main__":
     )
     validate.xgb_preds(proba_proton, proba_kaon, proba_pion)
     # graphs
-    # confusion matrix
-    pid_variable_name = json_tools.load_var_name(json_file_name, "pid")
-    cnf_matrix = confusion_matrix(
-        validate.particles_df[pid_variable_name], validate.particles_df["xgb_preds"]
-    )
-    plotting_tools.plot_confusion_matrix(cnf_matrix)
-    plotting_tools.plot_confusion_matrix(cnf_matrix, normalize=True)
-    # confusion matrix statistic
-    txt_file = open("efficiency_stats.txt", "w+")
-    for pid in range(0, 3):
-        validate.efficiency_stats(cnf_matrix, pid, pid_variable_name, txt_file)
-    txt_file.close()
-    # tof plots
-    print("Generating plots.")
-    # simulated:
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable_name] == 0],
-        json_file_name,
-        "protons (all simulated)",
-    )
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable_name] == 1],
-        json_file_name,
-        "kaons (all simulated)",
-    )
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable_name] == 2],
-        json_file_name,
-        "pions, muons, electrons (all simulated)",
-    )
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df[pid_variable_name] == 3],
-        json_file_name,
-        "bckgr (all simulated)",
-    )
-    # xgb selected
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 0],
-        json_file_name,
-        "protons (XGB-selected)",
-    )
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 1],
-        json_file_name,
-        "kaons (XGB-selected)",
-    )
-    plotting_tools.tof_plot(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 2],
-        json_file_name,
-        "pions, muons, electrons (XGB-selected)",
-    )
-    try:
-        plotting_tools.tof_plot(
-            validate.particles_df[validate.particles_df["xgb_preds"] == 3],
-            json_file_name,
-            "bckgr (XGB-selected)",
-        )
-    except:
-        print("no tof plot for bckgr")
-    # mass2 plots
-    mass2_variable_name = json_tools.load_var_name(json_file_name, "mass2")
-    protons_range = (-0.2, 1.8)
-    kaons_range = (-0.2, 0.6)
-    pions_range = (-0.3, 0.3)
-    plotting_tools.plot_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 0][
-            mass2_variable_name
-        ],
-        validate.particles_df[validate.particles_df[pid_variable_name] == 0][
-            mass2_variable_name
-        ],
-        "Protons",
-        protons_range,
-    )
-    plotting_tools.plot_all_particles_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 0],
-        mass2_variable_name,
-        pid_variable_name,
-        "Protons",
-        protons_range,
-    )
-    plotting_tools.plot_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 1][
-            mass2_variable_name
-        ],
-        validate.particles_df[validate.particles_df[pid_variable_name] == 1][
-            mass2_variable_name
-        ],
-        "Kaons",
-        kaons_range,
-    )
-    plotting_tools.plot_all_particles_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 1],
-        mass2_variable_name,
-        pid_variable_name,
-        "Kaons",
-        kaons_range,
-    )
-    plotting_tools.plot_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 2][
-            mass2_variable_name
-        ],
-        validate.particles_df[validate.particles_df[pid_variable_name] == 2][
-            mass2_variable_name
-        ],
-        "Pions (& electrons, muons)",
-        pions_range,
-    )
-    plotting_tools.plot_all_particles_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 2],
-        mass2_variable_name,
-        pid_variable_name,
-        "Pions (& electrons, muons)",
-        pions_range,
-    )
-    plotting_tools.plot_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 3][
-            mass2_variable_name
-        ],
-        validate.particles_df[validate.particles_df[pid_variable_name] == 3][
-            mass2_variable_name
-        ],
-        "Background",
-        pions_range,
-    )
-    plotting_tools.plot_all_particles_mass2(
-        validate.particles_df[validate.particles_df["xgb_preds"] == 3],
-        mass2_variable_name,
-        pid_variable_name,
-        "Background",
-        pions_range,
-    )
-    # pt-rapidity plots and for each rapidity
-    vars_to_draw = [
-        "Complex_E",
-        "Complex_chi2_ov_ndf_vtx",
-        "Complex_eta",
-        "Complex_l",
-        "Complex_t",
-        "Complex_mass2",
-        "Complex_p",
-        "Complex_pT",
-        "Complex_phi",
-        "Complex_pT",
-        "Complex_phi",
-        "Complex_rapidity",
-        "Complex_sim_p",
-        "Complex_sim_pT",
-        "Complex_sim_phi",
-        "Complex_vtx_chi2",
-        "Complex_M",
-        "Complex_v_tof",
-        "xgb_preds",
-    ]
-    particle_names = ["protons", "kaons", "pions", "bckgr"]
-    for pid in range(4):
-        plotting_tools.var_distributions_plot(
-            vars_to_draw,
-            [
-                validate.particles_df[
-                    (validate.particles_df[pid_variable_name] == pid)
-                ],
-                validate.particles_df[
-                    (
-                        (validate.particles_df[pid_variable_name] == pid)
-                        & (validate.particles_df["xgb_preds"] == pid)
-                    )
-                ],
-                validate.particles_df[
-                    (
-                        (validate.particles_df[pid_variable_name] != pid)
-                        & (validate.particles_df["xgb_preds"] == pid)
-                    )
-                ],
-            ],
-            [
-                f"true MC {particle_names[pid]}",
-                f"true selected {particle_names[pid]}",
-                f"false selected {particle_names[pid]}",
-            ],
-            filename=f"vars_dist_{particle_names[pid]}",
-        )
-        plotting_tools.plot_eff_pT_rap(validate.particles_df, pid)
-        plotting_tools.plot_pt_rapidity(validate.particles_df, pid)
+    validate.confusion_matrix_and_stats()
+    print("Generating plots...")
+    validate.generate_plots()
     # save validated dataset
     validate.save_df()

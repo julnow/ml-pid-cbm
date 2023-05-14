@@ -83,6 +83,19 @@ def load_features_for_train(json_file_name: str) -> List[str]:
         features_for_train = json.load(json_file)["features_for_train"]
     return features_for_train
 
+def load_vars_to_draw(json_file_name: str) -> List[str]:
+    """Load names of variables to draw from json file.
+
+    Args:
+        json_file_name: Name of json file.
+
+    Returns:
+        List[str]: List of variables to draw.
+    """
+    with open(json_file_name, "r") as json_file:
+        vars_to_draw = json.load(json_file)["vars_to_draw"]
+    return vars_to_draw
+
 
 def load_hyper_params_vals(json_file_name: str) -> Tuple[str, str, str]:
     """Loads XGBoost hyper parameters values from json file to skip optimization.
