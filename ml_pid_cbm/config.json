@@ -1,7 +1,7 @@
 {
   "file_names": {
-    "training": "/Users/julnow/gsi/mgr/trees/PlainTree1M_DCM_tof_primaries_12agev.root",
-    "test": "/Users/julnow/gsi/mgr/trees/PlainTree500k_URQMD_tof_primaries_12agev.root"
+    "training": "/Users/julnow/gsi/mgr/trees/PlainTree2M_DCM_tof_primaries_12agev.root",
+    "test": "/Users/julnow/gsi/mgr/trees/PlainTree1M_URQMD_tof_primaries_12agev.root"
   },
   "var_names": {
     "momentum": "Complex_p",
