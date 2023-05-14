@@ -57,7 +57,7 @@ class PrepareModel:
                 hyper_params_ranges,
                 cross_val_scoring="roc_auc_ovo",
                 timeout=120,
-                n_jobs=4,
+                n_jobs=-1,
                 n_trials=3,
                 direction="maximize",
             )
