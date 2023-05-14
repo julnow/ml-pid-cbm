@@ -204,7 +204,7 @@ if __name__ == "__main__":
     train = TrainModel(model_hdl, model_name)
     sample_weights = compute_sample_weight(
         class_weight=None,  # class_weight="balanced" deleted for now
-        y=train_test_data[1]
+        y=train_test_data[1],
     )
     train.train_model_handler(train_test_data, sample_weights)
     print("\nModel trained!")
