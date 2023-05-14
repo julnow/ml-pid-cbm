@@ -1,15 +1,41 @@
-{"file_names":{
-  "training": "/Users/julnow/gsi/mgr/trees/PlainTree1M_DCM_tof_primaries_12agev.root",
-  "test": "/Users/julnow/gsi/mgr/trees/PlainTree500k_URQMD_tof_primaries_12agev.root"
-},
+{
+  "file_names": {
+    "training": "/Users/julnow/gsi/mgr/trees/PlainTree1M_DCM_tof_primaries_12agev.root",
+    "test": "/Users/julnow/gsi/mgr/trees/PlainTree500k_URQMD_tof_primaries_12agev.root"
+  },
   "var_names": {
     "momentum": "Complex_p",
     "charge": "Complex_q",
     "mass2": "Complex_mass2",
     "pid": "Complex_pid"
   },
-  "features_for_train":
-    ["Complex_l", "Complex_t", "Complex_vtx_chi2", "Complex_chi2_ov_ndf_vtx"],
+  "features_for_train": [
+    "Complex_v_tof",
+    "Complex_t",
+    "Complex_vtx_chi2",
+    "Complex_chi2_ov_ndf_vtx"
+  ],
+  "vars_to_draw": [
+    "Complex_E",
+    "Complex_chi2_ov_ndf_vtx",
+    "Complex_eta",
+    "Complex_l",
+    "Complex_t",
+    "Complex_mass2",
+    "Complex_p",
+    "Complex_pT",
+    "Complex_phi",
+    "Complex_pT",
+    "Complex_phi",
+    "Complex_rapidity",
+    "Complex_sim_p",
+    "Complex_sim_pT",
+    "Complex_sim_phi",
+    "Complex_vtx_chi2",
+    "Complex_M",
+    "Complex_v_tof",
+    "xgb_preds"
+  ],
   "cuts": {
     "Complex_mass2": {
       "lower": -1.0,
@@ -37,27 +63,48 @@
     },
     "Complex_chi2_ov_ndf_vtx": {
       "lower": 0,
-      "upper": 4000}
+      "upper": 4000
+    }
   },
-  "hyper_params": { 
+  "hyper_params": {
     "values": {
       "n_estimators": 670,
       "max_depth": 5,
       "learning_rate": 0.04281706988524796,
       "gamma": 1,
-      "subsample": 0.6296676786626392, 
+      "subsample": 0.6296676786626392,
       "alpha": 0,
       "lambda": 1
     },
     "ranges": {
-      "n_estimators": [300, 1200],
-      "max_depth": [2, 8],
-      "learning_rate": [0.01, 0.1],
-      "gamma": [0, 10],
-      "subsample": [0.3, 0.9],
-      "alpha": [0, 5],
-      "lambda": [0, 10]
-
+      "n_estimators": [
+        300,
+        1200
+      ],
+      "max_depth": [
+        2,
+        8
+      ],
+      "learning_rate": [
+        0.01,
+        0.1
+      ],
+      "gamma": [
+        0,
+        10
+      ],
+      "subsample": [
+        0.3,
+        0.9
+      ],
+      "alpha": [
+        0,
+        5
+      ],
+      "lambda": [
+        0,
+        10
+      ]
     }
   }
 }
