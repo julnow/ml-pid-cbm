@@ -15,6 +15,3 @@ class TestValidateModel(unittest.TestCase):
         self.assertRaises(
             ValueError, lambda: ValidateModel.parse_model_name(model_name_incorrect)
         )
-
-    if __name__ == "__main__":
-        unittest.main()

@@ -11,6 +11,7 @@ class TestPrepareModel(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.train_model_without_opt = PrepareModel("config.json", False, False)
+        cls.train_model_without_opt_gpu = PrepareModel("config.json", False, True)
         cls.train_model_with_opt = PrepareModel("config.json", True, False)
         cls.proton_entry = {
             "Complex_q": 1.0,
@@ -80,6 +81,4 @@ class TestPrepareModel(unittest.TestCase):
                 TypeError, lambda: self.train_model_with_opt.prepare_model_handler()
             )
             self.train_model_without_opt.prepare_model_handler()
-
-    if __name__ == "__main__":
-        unittest.main()
+            self.train_model_without_opt_gpu.prepare_model_handler()

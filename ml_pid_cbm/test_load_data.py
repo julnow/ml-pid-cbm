@@ -38,9 +38,13 @@ class TestLoadData(unittest.TestCase):
         "cuts":{"Complex_pT": {"lower": 0,"upper": 2.0},"Complex_eta": {"lower": 0.0,"upper": 6.0}}}"""
         with patch("builtins.open", mock_open(read_data=json_data)):
             # only positive particles
-            test_str = self.loader_pos.clean_tree()
-            expected_str = "(0.0 <= Complex_pT < 2.0) and (0.0 <= Complex_eta < 6.0) and (0.0 <= Complex_p < 3.0) and (Complex_q > 0)"
-            self.assertEqual(test_str, expected_str)
+            test_str_pos = self.loader_pos.clean_tree()
+            expected_str_pos = "(0.0 <= Complex_pT < 2.0) and (0.0 <= Complex_eta < 6.0) and (0.0 <= Complex_p < 3.0) and (Complex_q > 0)"
+            test_str_neg = self.loader_anti.clean_tree()
+            expected_str_neg = "(0.0 <= Complex_pT < 2.0) and (0.0 <= Complex_eta < 6.0) and (0.0 <= Complex_p < 3.0) and (Complex_q < 0)"
+            self.assertEqual(test_str_pos, expected_str_pos)
+            self.assertEqual(test_str_neg, expected_str_neg)
+
 
     def test_get_particles_type(self):
         proton_entry = {
@@ -191,6 +195,3 @@ class TestLoadData(unittest.TestCase):
                 anti_pions.get_data_frame().reset_index(drop=True),
                 pd.DataFrame([anti_pion_entry]).reset_index(drop=True),
             )
-
-    if __name__ == "__main__":
-        unittest.main()

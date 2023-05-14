@@ -13,6 +13,7 @@ class TestJsonTools(unittest.TestCase):
         },"var_names":{"momentum": "Complex_p","charge": "Complex_q"},
         "cuts":{"Complex_mass2": {"lower": -1.0,"upper": 2.0},"Complex_pT": {"lower": 0.0,"upper": 2.0}},
         "features_for_train":["Complex_mass2", "Complex_p"],
+        "vars_to_draw":["Complex_mass2", "Complex_eta"],
         "hyper_params": {"values": {"n_estimators": 596,"max_depth": 5,"learning_rate": 0.07161792803939408},
         "ranges": {"n_estimators": [400, 1000],"max_depth": [2, 6],"learning_rate": [0.01, 0.1]}}}"""
 
@@ -46,6 +47,11 @@ class TestJsonTools(unittest.TestCase):
         with patch("builtins.open", mock_open(read_data=self.json_data)):
             read_features = json_tools.load_features_for_train("test.json")
             self.assertEqual(target_features, read_features)
+    def test_load_vars_to_draw(self):
+        target_vars = ["Complex_mass2", "Complex_eta"]
+        with patch("builtins.open", mock_open(read_data=self.json_data)):
+            read_vars = json_tools.load_vars_to_draw("test.json")
+            self.assertEqual(target_vars, read_vars)
 
     def test_load_hyper_params_vals(self):
         target_vals = (596, 5, 0.07161792803939408)
@@ -58,5 +64,4 @@ class TestJsonTools(unittest.TestCase):
             with patch("builtins.open", mock_open(read_data=self.json_data)):
                 read_name = json_tools.load_file_name("test.json", training_or_test="training")
                 self.assertEqual(target_name, read_name)
-    if __name__ == "__main__":
-        unittest.main()
+    
