@@ -75,8 +75,8 @@ class ValidateModel:
         """
         df = self.particles_df
         if self.anti_particles:
-            df[pid_variable_name] = (
-                df[pid_variable_name]
+            df[self.pid_variable_name] = (
+                df[self.pid_variable_name]
                 .map(
                     defaultdict(
                         lambda: 3.0,
