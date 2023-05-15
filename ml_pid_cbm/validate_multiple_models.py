@@ -1,16 +1,17 @@
 import argparse
 import os
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from shutil import copy2
 from typing import List, Set
-import sys
 
 import pandas as pd
 from validate_model import ValidateModel
 
+
 class ValidateMultipleModels(ValidateModel):
     """
-    Class for validating data from multiple models. 
+    Class for validating data from multiple models.
     Inherits from ValidateModel
     """
 
@@ -33,7 +34,8 @@ class ValidateMultipleModels(ValidateModel):
             results = list(executor.map(pd.read_pickle, files_list))
             whole_df = pd.concat(results, ignore_index=True)
         return whole_df
-    
+
+
 def parse_args(args: List[str]) -> argparse.Namespace:
     """
     Arguments parser for the main method.
@@ -72,6 +74,7 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         help="Max number of workers for ThreadPoolExecutor which reads Root tree with data.",
     )
     return parser.parse_args(args)
+
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])

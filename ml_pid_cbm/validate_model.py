@@ -152,7 +152,6 @@ class ValidateModel:
         cm: np.ndarray,
         pid: float,
         txt_tile: io.TextIOWrapper = None,
-        dataframe: pd.DataFrame = None,
         print_output: bool = True,
     ) -> Tuple[float, float]:
         """
@@ -169,7 +168,7 @@ class ValidateModel:
         Returns:
             Tuple[float, float]: Tuple with efficiency and purity
         """
-        df = dataframe or self.particles_df
+        df = self.particles_df
         all_simulated_signal = len(df.loc[df[self.pid_variable_name] == pid])
         true_signal = cm[pid][pid]
         false_signal = 0
@@ -235,7 +234,7 @@ class ValidateModel:
                 self.particles_df["xgb_preds"],
             )
             for pid in range(self.get_n_classes() - 1):
-                efficiency, purity = validate.efficiency_stats(
+                efficiency, purity = self.efficiency_stats(
                     cnf_matrix, pid, print_output=False
                 )
                 efficiencies[pid].append(efficiency)
@@ -277,7 +276,7 @@ class ValidateModel:
         plotting_tools.plot_confusion_matrix(cnf_matrix, normalize=True)
         txt_file = open(efficiency_filename, "w+")
         for pid in range(self.get_n_classes() - 1):
-            validate.efficiency_stats(cnf_matrix, pid, pid_variable_name, txt_file)
+            self.efficiency_stats(cnf_matrix, pid, txt_file)
         txt_file.close()
 
     def generate_plots(self):
