@@ -30,6 +30,7 @@ class TestLoadData(unittest.TestCase):
             upper_p_cut=3.0,
             anti_particles=True,
         )
+        self.plain_tree = "test_plain_tree.root"
 
     def test_clean_tree(self):
         # manually created entries to test data cleanin
@@ -44,7 +45,6 @@ class TestLoadData(unittest.TestCase):
             expected_str_neg = "(0.0 <= Complex_pT < 2.0) and (0.0 <= Complex_eta < 6.0) and (0.0 <= Complex_p < 3.0) and (Complex_q < 0)"
             self.assertEqual(test_str_pos, expected_str_pos)
             self.assertEqual(test_str_neg, expected_str_neg)
-
 
     def test_get_particles_type(self):
         proton_entry = {
@@ -195,3 +195,6 @@ class TestLoadData(unittest.TestCase):
                 anti_pions.get_data_frame().reset_index(drop=True),
                 pd.DataFrame([anti_pion_entry]).reset_index(drop=True),
             )
+
+    def test_load_tree(self):
+        self.loader_pos.load_tree(self.plain_tree)
