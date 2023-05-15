@@ -197,4 +197,5 @@ class TestLoadData(unittest.TestCase):
             )
 
     def test_load_tree(self):
-        self.loader_pos.load_tree(self.plain_tree)
+        with patch.object(LoadData, "clean_tree", return_value=''):
+            self.loader_pos.load_tree(self.plain_tree)
