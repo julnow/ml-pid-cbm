@@ -65,6 +65,9 @@ class TestValidateModel(unittest.TestCase):
             self.validate = ValidateModel(
                 2, 4, False, "test.json", pd.DataFrame(complete_data)
             )
+            self.validate_false = ValidateModel(
+                2, 4, True, "test.json", pd.DataFrame(complete_data)
+            )
 
     def test_get_n_classes(self):
         self.assertEqual(self.validate.get_n_classes(), 4)
@@ -81,6 +84,7 @@ class TestValidateModel(unittest.TestCase):
         self.assertEqual(df[df["Complex_mass2"] == 0.2]["Complex_pid"].item(), 2)
         self.assertEqual(df[df["Complex_mass2"] == 0.4]["Complex_pid"].item(), 1)
         self.assertEqual(df[df["Complex_mass2"] == 0.8]["Complex_pid"].item(), 0)
+        self.validate_false.remap_names()
 
     def test_save_df(self):
         self.validate.save_df()
