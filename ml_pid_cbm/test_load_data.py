@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import mock_open, patch
+from pathlib import Path
 
 import pandas as pd
 from hipe4ml.tree_handler import TreeHandler
@@ -30,7 +31,8 @@ class TestLoadData(unittest.TestCase):
             upper_p_cut=3.0,
             anti_particles=True,
         )
-        self.plain_tree = "test_plain_tree.root"
+        test_dir = Path(__file__).resolve().parent
+        self.plain_tree = f"{test_dir}/test_plain_tree.root"
 
     def test_clean_tree(self):
         # manually created entries to test data cleanin
