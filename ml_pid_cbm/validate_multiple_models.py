@@ -83,13 +83,13 @@ if __name__ == "__main__":
     models = args.modelnames
     n_workers = args.nworkers
     pickle_files = {f"{model}/validated_data.pickle" for model in models}
+    validate = ValidateMultipleModels(json_file_name, pickle_files, n_workers)
     # new folder for all files
     json_file_path = os.path.join(os.getcwd(), json_file_name)
     if not os.path.exists("all_models"):
         os.makedirs("all_models")
     os.chdir("all_models")
     copy2(json_file_path, os.getcwd())
-    validate = ValidateMultipleModels(json_file_name, pickle_files, n_workers)
     # graphs
     validate.confusion_matrix_and_stats()
     print("Generating plots...")

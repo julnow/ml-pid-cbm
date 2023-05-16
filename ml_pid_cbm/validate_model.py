@@ -330,7 +330,7 @@ class ValidateModel:
                 ranges[pid],
             )
             plotting_tools.plot_all_particles_mass2(
-                self.particles_df[self.particles_df["xgb_preds"] == 0],
+                self.particles_df[self.particles_df["xgb_preds"] == pid],
                 self.mass2_variable_name,
                 self.pid_variable_name,
                 particle_name,
