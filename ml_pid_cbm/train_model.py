@@ -5,13 +5,12 @@ import sys
 from shutil import copy2
 from typing import List
 
-from hipe4ml.model_handler import ModelHandler
-from sklearn.utils.class_weight import compute_sample_weight
-import pandas as pd
+import json_tools
 import plotting_tools
+from hipe4ml.model_handler import ModelHandler
 from load_data import LoadData
 from prepare_model import PrepareModel
-import json_tools
+from sklearn.utils.class_weight import compute_sample_weight
 
 
 class TrainModel:

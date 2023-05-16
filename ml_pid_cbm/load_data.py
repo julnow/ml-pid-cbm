@@ -3,13 +3,11 @@ Module for loading data saved in .tree format into hipe4ml.TreeHandler,
 data cleaning and preparing training and test dataset.
 """
 
-import json
-from typing import List, Tuple
-import json_tools
+from typing import Tuple
 
+import json_tools
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
-
 from particles_id import ParticlesId as Pid
 
 
@@ -36,7 +34,7 @@ class LoadData:
     def get_protons_kaons_pions(
         self,
         tree_handler: TreeHandler,
-        nsigma: float = 3,
+        nsigma: float = 5,
         anti_particles: bool = None,
         nsigma_proton: float = None,
         nsigma_kaon: float = None,
