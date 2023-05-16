@@ -6,15 +6,14 @@ import sys
 from collections import defaultdict
 from typing import List, Tuple
 
+import json_tools
 import numpy as np
 import pandas as pd
-from hipe4ml.model_handler import ModelHandler
-from sklearn.metrics import confusion_matrix
-
 import plotting_tools
+from hipe4ml.model_handler import ModelHandler
 from load_data import LoadData
 from particles_id import ParticlesId as Pid
-import json_tools
+from sklearn.metrics import confusion_matrix
 
 
 class ValidateModel:
@@ -293,11 +292,14 @@ class ValidateModel:
         """
         for pid, particle_name in enumerate(self.classes_names):
             # simulated:
-            plotting_tools.tof_plot(
-                self.particles_df[self.particles_df[self.pid_variable_name] == pid],
-                self.json_file_name,
-                f"{particle_name} (all simulated)",
-            )
+            try:
+                plotting_tools.tof_plot(
+                    self.particles_df[self.particles_df[self.pid_variable_name] == pid],
+                    self.json_file_name,
+                    f"{particle_name} (all simulated)",
+                )
+            except ValueError:
+                print(f"No simulated {particle_name}s")
             # xgb selected
             try:
                 plotting_tools.tof_plot(
