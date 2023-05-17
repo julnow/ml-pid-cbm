@@ -2,7 +2,7 @@
 This module is used for preparing the handler of the ML model.
 """
 import json
-from typing import Dict, Tuple, Union
+from typing import Dict, Tuple, Union, List
 
 import xgboost as xgb
 from hipe4ml.analysis_utils import train_test_generator
@@ -101,9 +101,7 @@ class PrepareModel:
 
     @staticmethod
     def prepare_train_test_data(
-        protons_th: TreeHandler,
-        kaons_th: TreeHandler,
-        pions_th: TreeHandler,
+        tree_handlers: List[TreeHandler],
         test_size: float = 0.2,
     ):
         """Prepares trainig_test_dataset using hipe4ml.train_test_generator
@@ -118,7 +116,8 @@ class PrepareModel:
             List containing respectively training set dataframe,
             training label array, test set dataframe, test label array.
         """
+        indexes = [index for index, _ in enumerate(tree_handlers)]
         train_test_data = train_test_generator(
-            [protons_th, kaons_th, pions_th], [0, 1, 2], test_size=test_size
+            tree_handlers, indexes, test_size=test_size
         )
         return train_test_data

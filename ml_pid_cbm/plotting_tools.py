@@ -152,13 +152,19 @@ def output_train_test_plot(
         logscale=logscale,
         density=False, #if true histograms are normalized
     )
-
-    for idx, fig in enumerate(ml_out_fig):
+    if len(leg_labels) > 1:
+        for idx, fig in enumerate(ml_out_fig):
+            if save_fig:
+                fig.savefig(f"output_train_test_plot_{idx}.png")
+                fig.savefig(f"output_train_test_plot_{idx}.pdf")
+            else:
+                fig.show()
+    else:
         if save_fig:
-            fig.savefig(f"output_train_test_plot_{idx}.png")
-            fig.savefig(f"output_train_test_plot_{idx}.pdf")
+                ml_out_fig.savefig(f"output_train_test_plot.png")
+                ml_out_fig.savefig(f"output_train_test_plot.pdf")
         else:
-            fig.show()
+            ml_out_fig.show()
     plt.close()
 
 

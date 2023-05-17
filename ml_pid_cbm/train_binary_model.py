@@ -8,19 +8,17 @@ from typing import List
 import json_tools
 import plotting_tools
 from hipe4ml.model_handler import ModelHandler
+from particles_id import ParticlesId as Pid
 from load_data import LoadData
+from train_model import TrainModel
 from prepare_model import PrepareModel
 from sklearn.utils.class_weight import compute_sample_weight
 
 
-class TrainModel:
+class TrainBinaryModel(TrainModel):
     """
     Class for training the ml model
     """
-
-    def __init__(self, model_hdl: ModelHandler, model_name: str):
-        self.model_hdl = model_hdl
-        self.model_name = model_name
 
     def train_model_handler(
         self, train_test_data, sample_weights, model_hdl: ModelHandler = None
@@ -34,22 +32,8 @@ class TrainModel:
             model_hdl (ModelHandler, optional):  Hipe4ml model handler. Defaults to None.
         """
         model_hdl = model_hdl or self.model_hdl
-        model_hdl.train_test_model(
-            train_test_data, multi_class_opt="ovo", sample_weight=sample_weights
-        )
+        model_hdl.train_test_model(train_test_data, sample_weight=sample_weights)
         self.model_hdl = model_hdl
-
-    def save_model(self, model_name: str = None, model_hdl: ModelHandler = None):
-        """Saves trained model handler.
-
-        Args:
-            model_name (str, optional): Name of the model handler. Defaults to None.
-            model_hdl (ModelHandler, optional): Hipe4ml model handler. Defaults to None.
-        """
-        model_name = model_name or self.model_name
-        model_hdl = model_hdl or self.model_hdl
-        model_hdl.dump_model_handler(model_name)
-        print(f"\nModel saved as {model_name}")
 
 
 def parse_args(args: List[str]) -> argparse.Namespace:
@@ -63,7 +47,8 @@ def parse_args(args: List[str]) -> argparse.Namespace:
         argparse.Namespace: argparse.Namespace containg args
     """
     parser = argparse.ArgumentParser(
-        prog="ML_PID_CBM TrainModel", description="Program for training PID ML models"
+        prog="ML_PID_CBM TrainModel",
+        description="Program for training binary PID ML models",
     )
     parser.add_argument(
         "--config",
@@ -148,16 +133,13 @@ if __name__ == "__main__":
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
     tree_handler = loader.load_tree(max_workers=n_workers)
-    NSIGMA_PROTON = 5
-    NSIGMA_KAON = 5
-    NSIGMA_PION = 5
-    protons, kaons, pions = loader.get_protons_kaons_pions(
-        tree_handler,
-        nsigma_proton=NSIGMA_PROTON,
-        nsigma_kaon=NSIGMA_KAON,
-        nsigma_pion=NSIGMA_PION,
+    NSIGMA = 5
+    kaons = loader.get_particles_type(
+        tree_handler, Pid.POS_KAON.value, nsigma=NSIGMA, json_file_name=json_file_name
     )
-    print(f"\nProtons, kaons, and pions loaded using file {data_file_name}\n")
+    pid_var_name = json_tools.load_var_name(json_file_name, "pid")
+    bckgr = tree_handler.get_subset(f"{pid_var_name} != {Pid.POS_KAON.value}")
+    print(f"\nKaons and bckgr (everything else) loaded using file {data_file_name}\n")
     del tree_handler
     gc.collect()
     # change location to specific folder for this model
@@ -170,28 +152,16 @@ if __name__ == "__main__":
     if create_plots:
         print("Creating pre-training plots...")
         plotting_tools.tof_plot(
-            protons,
-            json_file_name,
-            f"protons ({NSIGMA_PROTON}$\sigma$)",
-            save_fig=save_plots,
+            kaons, json_file_name, f"kaons ({NSIGMA}$\sigma$)", save_fig=save_plots
         )
-        plotting_tools.tof_plot(
-            kaons, json_file_name, f"kaons ({NSIGMA_KAON}$\sigma$)", save_fig=save_plots
-        )
-        plotting_tools.tof_plot(
-            pions,
-            json_file_name,
-            f"pions, muons, electrons ({NSIGMA_PION}$\sigma$)",
-            save_fig=save_plots,
-        )
-        vars_to_draw = protons.get_var_names()
+        vars_to_draw = bckgr.get_var_names()
         plotting_tools.correlations_plot(
-            vars_to_draw, [protons, kaons, pions], save_fig=save_plots
+            vars_to_draw, [kaons, bckgr], save_fig=save_plots
         )
     # loading model handler
     model_hdl = PrepareModel(json_file_name, optimize_hyper_params, use_gpu)
-    train_test_data = PrepareModel.prepare_train_test_data([protons, kaons, pions])
-    del protons, kaons, pions
+    train_test_data = PrepareModel.prepare_train_test_data([kaons, bckgr])
+    del kaons, bckgr
     gc.collect()
     features_for_train = json_tools.load_features_for_train(json_file_name)
     print("\nPreparing model handler...")
@@ -219,12 +189,14 @@ if __name__ == "__main__":
             anti_particles,
         )
         tree_handler_test = loader_test.load_tree(max_workers=n_workers)
-        protons_test, kaons_test, pions_test = loader_test.get_protons_kaons_pions(
-            tree_handler_test
+        kaons_test = loader.get_particles_type(
+            tree_handler_test,
+            Pid.POS_KAON.value,
+            nsigma=NSIGMA,
+            json_file_name=json_file_name,
         )
-        validation_data = PrepareModel.prepare_train_test_data(
-            [protons_test, kaons_test, pions_test]
-        )
+        bckgr_test = tree_handler_test.get_subset(f"{pid_var_name} != {Pid.POS_KAON.value}")
+        validation_data = PrepareModel.prepare_train_test_data([kaons_test, bckgr_test])
         train_test_data = [
             train_test_data[0],
             train_test_data[1],
@@ -236,7 +208,7 @@ if __name__ == "__main__":
         y_pred_train = model_hdl.predict(train_test_data[0], False)
         y_pred_test = model_hdl.predict(train_test_data[2], False)
         plotting_tools.output_train_test_plot(
-            train.model_hdl, train_test_data, save_fig=save_plots, logscale=True
+            train.model_hdl, train_test_data, leg_labels=["kaons"], save_fig=save_plots, logscale=True
         )
 
         plotting_tools.roc_plot(train_test_data[3], y_pred_test, save_fig=save_plots)
