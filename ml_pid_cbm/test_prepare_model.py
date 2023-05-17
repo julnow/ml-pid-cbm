@@ -54,24 +54,30 @@ class TestPrepareModel(unittest.TestCase):
     def test_prepare_train_test_data(self):
         with patch("builtins.open", mock_open(read_data=self.json_data)):
             self.train_model_without_opt.prepare_train_test_data(
-                self.proton_tree_handler,
-                self.kaon_tree_handler,
-                self.pion_tree_handler,
+                [
+                    self.proton_tree_handler,
+                    self.kaon_tree_handler,
+                    self.pion_tree_handler,
+                ],
                 0.5,
             )
             self.train_model_with_opt.prepare_train_test_data(
-                self.proton_tree_handler,
-                self.kaon_tree_handler,
-                self.pion_tree_handler,
+                [
+                    self.proton_tree_handler,
+                    self.kaon_tree_handler,
+                    self.pion_tree_handler,
+                ],
                 0.5,
             )
 
     def test_prepare_model_handler(self):
         with patch("builtins.open", mock_open(read_data=self.json_data)):
             train_test_data = self.train_model_without_opt.prepare_train_test_data(
-                self.proton_tree_handler,
-                self.kaon_tree_handler,
-                self.pion_tree_handler,
+                [
+                    self.proton_tree_handler,
+                    self.kaon_tree_handler,
+                    self.pion_tree_handler,
+                ],
                 0.1,
             )
             self.train_model_with_opt.prepare_model_handler(  # TODO modify and suppress output
