@@ -26,5 +26,6 @@ pdfjam confusion_*.pdf --nup 2x1 --landscape --outfile merge/cm.pdf
 pdfjam eff_pT*.pdf plot_pt*.pdf --landscape --nup 4x2  --outfile merge/pT.pdf
 pdfjam mass2*.pdf --nup 4x2 --landscape --outfile merge/mass2.pdf
 pdfjam tof_plot_*.pdf --nup 4x3 --landscape --outfile merge/tof.pdf
+cp vars_dist*.pdf merge/
 cd ../  
 pdfunite all_models/merge/*.pdf pdfs/all_models.pdf 
