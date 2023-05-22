@@ -1,0 +1,4 @@
+{
+"var_names": {"momentum": "Complex_p","charge": "Complex_q","mass2": "Complex_mass2","pid": "Complex_pid"},
+"vars_to_draw": ["Complex_mass2", "Complex_p"]
+}

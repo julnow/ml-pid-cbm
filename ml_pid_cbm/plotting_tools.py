@@ -3,7 +3,7 @@ import itertools
 from typing import List
 
 import fasttreeshap as shap
-import matplotlib.cm as cm
+import matplotlib as mplt
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
@@ -184,28 +184,28 @@ def roc_plot(
 
 
 def plot_confusion_matrix(
-    cm,
+    cnf_matrix: np.ndarray,
     classes=["proton", "kaon", "pion", "bckgr"],
     normalize=False,
     title="Confusion matrix",
-    cmap=cm.get_cmap("Blues"),
+    cmap=mplt.colormaps["Blues"],
     save_fig: bool = True,
 ):
     filename = "confusion_matrix"
     if normalize:
-        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+        cnf_matrix = cnf_matrix.astype("float") / cnf_matrix.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
         title = title + " (normalized)"
         filename = filename + " (norm)"
     else:
         print("Confusion matrix, without normalization")
 
-    print(cm)
+    print(cnf_matrix)
     np.set_printoptions(precision=2)
     fig, axs = plt.subplots(figsize=(10, 8), dpi=300)
     axs.yaxis.set_label_coords(-0.04, 0.5)
     axs.xaxis.set_label_coords(0.5, -0.005)
-    plt.imshow(cm, interpolation="nearest", cmap=cmap)
+    plt.imshow(cnf_matrix, interpolation="nearest", cmap=cmap)
     plt.title(title)
     plt.colorbar()
     tick_marks = np.arange(len(classes))
@@ -213,14 +213,14 @@ def plot_confusion_matrix(
     plt.yticks(tick_marks, classes)
 
     fmt = ".2f" if normalize else "d"
-    thresh = cm.max() / 2.0
-    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+    thresh = cnf_matrix.max() / 2.0
+    for i, j in itertools.product(range(cnf_matrix.shape[0]), range(cnf_matrix.shape[1])):
         plt.text(
             j,
             i,
-            format(cm[i, j], fmt),
+            format(cnf_matrix[i, j], fmt),
             horizontalalignment="center",
-            color="white" if cm[i, j] > thresh else "black",
+            color="white" if cnf_matrix[i, j] > thresh else "black",
         )
 
     plt.tight_layout()

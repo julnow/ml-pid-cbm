@@ -89,12 +89,13 @@ class TestValidateModel(unittest.TestCase):
         ]
         self.json_data = """{"var_names": {"momentum": "Complex_p","charge": "Complex_q","mass2": "Complex_mass2","pid": "Complex_pid"},
                     "vars_to_draw": ["Complex_mass2", "Complex_p"]}"""
+        test_config_path = f"{Path(__file__).resolve().parent}/test_config.json"
         with patch("builtins.open", mock_open(read_data=self.json_data)):
             self.validate = ValidateModel(
-                2, 4, False, "test.json", pd.DataFrame(complete_data)
+                2, 4, False, test_config_path, pd.DataFrame(complete_data)
             )
             self.validate_false = ValidateModel(
-                2, 4, True, "test.json", pd.DataFrame(complete_data)
+                2, 4, True, test_config_path, pd.DataFrame(complete_data)
             )
 
     def test_get_n_classes(self):
@@ -119,8 +120,10 @@ class TestValidateModel(unittest.TestCase):
 
     def test_generate_plots(self):
         self.validate.xgb_preds(0.7, 0.7, 0.7)
-        with patch("builtins.open", mock_open(read_data=self.json_data)):
-            self.validate.generate_plots()  
+        # with patch("builtins.open", mock_open(read_data=self.json_data)):
+        # should be mock json but
+        # https://github.com/julnow/ml-pid-cbm/actions/runs/5004465285/jobs/9029522575
+        self.validate.generate_plots()
 
     def test_evaluate_probas(self):
         self.validate.evaluate_probas(0.1, 0.9, 5, 50)
