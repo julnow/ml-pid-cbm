@@ -12,14 +12,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from hipe4ml.model_handler import ModelHandler
-from hipe4ml.plot_utils import plot_corr, plot_distr, plot_output_train_test, plot_roc
+from hipe4ml.plot_utils import (plot_corr, plot_distr, plot_output_train_test,
+                                plot_roc)
 from hipe4ml.tree_handler import TreeHandler
 from matplotlib import rcParams
 from optuna.study import Study
 from optuna.visualization import plot_contour, plot_optimization_history
 from sklearn.utils import resample
 
-from ml_pid_cbm.tools import json_tools
+from . import json_tools
 
 PARAMS = {
     "axes.titlesize": "22",

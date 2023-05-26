@@ -5,7 +5,7 @@ from pathlib import Path
 import pandas as pd
 from hipe4ml.tree_handler import TreeHandler
 
-from load_data import LoadData
+from .load_data import LoadData
 
 
 class TestLoadData(unittest.TestCase):

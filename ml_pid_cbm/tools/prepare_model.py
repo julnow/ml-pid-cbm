@@ -2,14 +2,15 @@
 This module is used for preparing the handler of the ML model.
 """
 import json
-from typing import Dict, Tuple, Union, List
+from typing import Dict, List, Tuple, Union
 
 import xgboost as xgb
 from hipe4ml.analysis_utils import train_test_generator
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
 from optuna.study import Study
-import json_tools
+
+from . import json_tools
 
 
 class PrepareModel:

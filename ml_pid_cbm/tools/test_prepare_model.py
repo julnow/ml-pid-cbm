@@ -4,7 +4,7 @@ from unittest.mock import mock_open, patch
 import pandas as pd
 from hipe4ml.tree_handler import TreeHandler
 
-from prepare_model import PrepareModel
+from .prepare_model import PrepareModel
 
 
 class TestPrepareModel(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import mock_open, patch
 
-import json_tools
+from . import json_tools
 
 
 class TestJsonTools(unittest.TestCase):

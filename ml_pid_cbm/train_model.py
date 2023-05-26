@@ -11,10 +11,9 @@ from typing import List
 
 from hipe4ml.model_handler import ModelHandler
 from sklearn.utils.class_weight import compute_sample_weight
-
-from ml_pid_cbm.tools import json_tools, plotting_tools
-from ml_pid_cbm.tools.load_data import LoadData
-from ml_pid_cbm.tools.prepare_model import PrepareModel
+from tools import json_tools, plotting_tools
+from tools.load_data import LoadData
+from tools.prepare_model import PrepareModel
 
 
 class TrainModel:

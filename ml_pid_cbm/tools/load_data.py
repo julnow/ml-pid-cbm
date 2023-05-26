@@ -8,8 +8,8 @@ from typing import Tuple
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
 
-from ml_pid_cbm.tools import json_tools
-from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
+from . import json_tools
+from .particles_id import ParticlesId as Pid
 
 
 class LoadData:

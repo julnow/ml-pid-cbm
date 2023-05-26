@@ -1,6 +1,6 @@
 import unittest
 
-from particles_id import ParticlesId
+from .particles_id import ParticlesId
 
 
 class TestParticlesId(unittest.TestCase):

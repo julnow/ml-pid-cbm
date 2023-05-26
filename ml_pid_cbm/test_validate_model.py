@@ -5,7 +5,8 @@ from pathlib import Path
 from unittest.mock import mock_open, patch
 
 import pandas as pd
-from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
+
+from tools.particles_id import ParticlesId as Pid
 from validate_model import ValidateModel
 
 
