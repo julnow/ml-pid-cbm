@@ -125,7 +125,7 @@ where:
 ### 4. Bash files
 For better automation, a bash file can be created for all the steps.
 
-For example, in the [bash_training](../blob/main/ml_pid_cbm/bash_train.sh) we can define:
+For example, in the [bash_training](../blob/main/ml_pid_cbm/bash/bash_train.sh) we can define:
 
 ```bash
 #!/bin/bash
@@ -138,7 +138,7 @@ python -u ../../train_model.py -c $CONFIG -p 0 1.6 --saveplots --nworkers 16 --u
 python -u ../../train_model.py -c $CONFIG -p 1.6 2.3 --saveplots --nworkers 16 --usevalidation  | tee train_bin_1.txt
 
 ```
-Later, in the [bash_validate](../blob/main/ml_pid_cbm/bash_validate.sh):
+Later, in the [bash_validate](../blob/main/ml_pid_cbm/bash/bash_validate.sh):
 
 ```bash
 #!/bin/bash
