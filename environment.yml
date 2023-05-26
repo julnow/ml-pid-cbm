@@ -6,6 +6,7 @@ dependencies:
   - matplotlib
   - pandas
   - numpy
+  - pdoc
   - plotly
   - py-xgboost
   - python-kaleido
