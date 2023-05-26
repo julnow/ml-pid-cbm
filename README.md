@@ -21,7 +21,7 @@ To run this project, you need to set up a Conda environment with the required pa
    git clone https://github.com/julnow/ml-pid-cbm.git
    cd ml-pid-cbm
    ```
-2. Install necessary packages described in the [enivornment.yml](../environment.yml) file to your conda environment, for example:
+2. Install necessary packages described in the [enivornment.yml](../main/environment.yml) file to your conda environment, for example:
     ```bash
     conda env update --file environment.yml --name enivornment_name
     ```
