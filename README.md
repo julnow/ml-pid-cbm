@@ -159,3 +159,8 @@ done
 python ../../validate_multiple_models.py -c $CONFIG -m $readymodels --nworkers 4
 ```
 which will validate all the models in the directory, and later merge their results.
+
+
+## Documentation
+
+Documentation available [here](https://julnow.github.io/ml-pid-cbm/ml_pid_cbm.html)
