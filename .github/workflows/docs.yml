@@ -22,9 +22,6 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: '3.8'
-    - uses: actions/upload-pages-artifact@v1
-      with:
-        path: docs/
     - name: Add conda to system path
       run: |
         # $CONDA is an environment variable pointing to the root of the miniconda directory
@@ -39,7 +36,10 @@ jobs:
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
     - name: Creade docs with pdoc
       run: pdoc ml_pid_cbm -o ./docs
-    
+    - uses: actions/upload-pages-artifact@v1
+      with:
+        path: docs/
+
 
   # Deploy the artifact to GitHub pages.
   # This is a separate job so that only actions/deploy-pages has the necessary permissions.
