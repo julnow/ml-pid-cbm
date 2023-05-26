@@ -36,6 +36,7 @@ This package constsits of three main modules.
 
 ### 0. config.json
 However, you should first  fill all the necessary fields in the [config.json](../blob/main/ml_pid_cbm/config.json)
+The root trees can be e.g., created using [ml-tree-plainer package](https://github.com/julnow/ml-tree-plainer).
 
 ```json
 {
@@ -78,7 +79,7 @@ where:
 * `--gpu` turns on GPU-usage for training
 * `--nworkers` sets number of threads available for the _ThreadPoolExecutor_
 * `--printplots` shows the plots interactively, while the `--saveplots` saves them in png and pdf format
-* `--usevalidation` uses validation dataset for creating the model output graphs, useful to check during the training if the model performs similarily on the training validation (ex. created using DCM simulation model) and validation (ex. creating using URQMD)
+* `--usevalidation` uses validation dataset for creating the model output graphs, useful to check during the training if the model performs similarily on the training validation (e.g., created using DCM simulation model) and validation (e.g., creating using URQMD)
 
 ### 2.  validate_model
 Module for validating a trained XGBoost model.
@@ -96,11 +97,11 @@ where:
 * `--modelname` is the name of the folder created during the trainig step containg the model (which will have the same name).
 * `--nworkers` sets number of threads available for the _ThreadPoolExecutor_
 * Probabilitycuts:
-  * `--probabilitycuts` can be set manually, for respectively PROTONS, KAONS, PIONS in the current implementation, ex. .9 .8 .9
-  * `--evaluateproba` will check probability cuts for each particle from LOWER_VALUE to UPPER_VALUE using N_STEPS, ex. .35 .98 40
+  * `--probabilitycuts` can be set manually, for respectively PROTONS, KAONS, PIONS in the current implementation, e.g., .9 .8 .9
+  * `--evaluateproba` will check probability cuts for each particle from LOWER_VALUE to UPPER_VALUE using N_STEPS, e.g., .35 .98 40
 * If probabilitycuts where set using `--evaluateproba`, user have to options:
     * Select them interactively if `--interactive` provided
-    * Apply automatic selection, aiming for MINIMAL_PURITY %, ex. 90
+    * Apply automatic selection, aiming for MINIMAL_PURITY %, e.g., 90
 
 #### The automatic probabilitycut selection alghoritm:
   1. Chooses the probability cut with the highest efficiency, if the purity is higher than MINIMAL_PURITY
@@ -118,7 +119,7 @@ usage: ML_PID_CBM ValidateMultipleModels [-h] --modelnames MODELNAMES
 where:
 * `--config` should be the location of the config file
 * `--nworkers` sets number of threads available for the _ThreadPoolExecutor_
-* `--modelnames` should be a list of all validated models whose results should be merged, ex. `-m modelA modelB modelC`
+* `--modelnames` should be a list of all validated models whose results should be merged, e.g., `-m modelA modelB modelC`
 
 
 ### 4. Bash files
