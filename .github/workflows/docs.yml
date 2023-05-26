@@ -35,7 +35,7 @@ jobs:
       # ADJUST THIS: build your documentation into docs/.
       # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
     - name: Creade docs with pdoc
-      run: pdoc ml_pid_cbm -o ./docs
+      run: python -m pdoc ml_pid_cbm -o ./docs
     - uses: actions/upload-pages-artifact@v1
       with:
         path: docs/
