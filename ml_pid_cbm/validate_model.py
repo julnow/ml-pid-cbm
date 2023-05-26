@@ -6,14 +6,14 @@ import sys
 from collections import defaultdict
 from typing import List, Tuple
 
-import json_tools
 import numpy as np
 import pandas as pd
-import plotting_tools
 from hipe4ml.model_handler import ModelHandler
-from load_data import LoadData
-from particles_id import ParticlesId as Pid
 from sklearn.metrics import confusion_matrix
+
+from ml_pid_cbm.tools import json_tools, plotting_tools
+from ml_pid_cbm.tools.load_data import LoadData
+from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
 
 
 class ValidateModel:
@@ -148,7 +148,7 @@ class ValidateModel:
 
     def efficiency_stats(
         self,
-        cm: np.ndarray,
+        cnf_matrix: np.ndarray,
         pid: float,
         txt_tile: io.TextIOWrapper = None,
         print_output: bool = True,
@@ -169,11 +169,11 @@ class ValidateModel:
         """
         df = self.particles_df
         all_simulated_signal = len(df.loc[df[self.pid_variable_name] == pid])
-        true_signal = cm[pid][pid]
+        true_signal = cnf_matrix[pid][pid]
         false_signal = 0
-        for i, row in enumerate(cm):
+        for i, row in enumerate(cnf_matrix):
             if i != pid:
-                false_signal += row[pid] + cm[pid][i]
+                false_signal += row[pid] + cnf_matrix[pid][i]
         reconstructed_signals = true_signal + false_signal
         efficiency = (
             true_signal / all_simulated_signal * 100

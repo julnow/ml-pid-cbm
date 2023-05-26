@@ -1,3 +1,7 @@
+"""
+Module for training the model.
+
+"""
 import argparse
 import gc
 import os
@@ -5,12 +9,12 @@ import sys
 from shutil import copy2
 from typing import List
 
-import json_tools
-import plotting_tools
 from hipe4ml.model_handler import ModelHandler
-from load_data import LoadData
-from prepare_model import PrepareModel
 from sklearn.utils.class_weight import compute_sample_weight
+
+from ml_pid_cbm.tools import json_tools, plotting_tools
+from ml_pid_cbm.tools.load_data import LoadData
+from ml_pid_cbm.tools.prepare_model import PrepareModel
 
 
 class TrainModel:
@@ -148,9 +152,9 @@ if __name__ == "__main__":
         data_file_name, json_file_name, lower_p_cut, upper_p_cut, anti_particles
     )
     tree_handler = loader.load_tree(max_workers=n_workers)
-    NSIGMA_PROTON = 5
-    NSIGMA_KAON = 5
-    NSIGMA_PION = 5
+    NSIGMA_PROTON = 0
+    NSIGMA_KAON = 0
+    NSIGMA_PION = 0
     protons, kaons, pions = loader.get_protons_kaons_pions(
         tree_handler,
         nsigma_proton=NSIGMA_PROTON,
@@ -220,7 +224,10 @@ if __name__ == "__main__":
         )
         tree_handler_test = loader_test.load_tree(max_workers=n_workers)
         protons_test, kaons_test, pions_test = loader_test.get_protons_kaons_pions(
-            tree_handler_test
+            tree_handler_test,
+            nsigma_proton=NSIGMA_PROTON,
+            nsigma_kaon=NSIGMA_KAON,
+            nsigma_pion=NSIGMA_PION,
         )
         validation_data = PrepareModel.prepare_train_test_data(
             [protons_test, kaons_test, pions_test]

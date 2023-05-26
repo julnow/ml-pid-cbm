@@ -5,10 +5,11 @@ data cleaning and preparing training and test dataset.
 
 from typing import Tuple
 
-import json_tools
 from hipe4ml.model_handler import ModelHandler
 from hipe4ml.tree_handler import TreeHandler
-from particles_id import ParticlesId as Pid
+
+from ml_pid_cbm.tools import json_tools
+from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
 
 
 class LoadData:
@@ -57,9 +58,9 @@ class LoadData:
             Tuple[TreeHandler, TreeHandler, TreeHandler]: _description_
         """
         anti_particles = anti_particles or self.anti_particles
-        nsigma_proton = nsigma_proton or nsigma
-        nsigma_kaon = nsigma_kaon or nsigma
-        nsigma_pion = nsigma_pion or nsigma
+        nsigma_proton = nsigma_proton if nsigma_proton is not None else nsigma
+        nsigma_kaon = nsigma_kaon if nsigma_kaon is not None else  nsigma
+        nsigma_pion = nsigma_pion if nsigma_pion is not None else nsigma
         json_file_name = json_file_name or self.json_file_name
 
         if anti_particles is False:
@@ -118,6 +119,7 @@ class LoadData:
         particles = tree_handler.get_subset(f"{pid_var_name} == {pid}")
         # getting selected nsigma region in the mass2
         if nsigma > 0:
+            print(f"Getting particles pid={pid} in {nsigma}-sigma region")
             mass2_column = particles.get_data_frame()[mass2_var_name]
             mean = mass2_column.mean()
             std = mass2_column.std()

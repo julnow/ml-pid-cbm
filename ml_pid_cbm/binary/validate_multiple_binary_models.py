@@ -4,9 +4,8 @@ import sys
 from shutil import copy2
 from typing import List, Set
 
-import pandas as pd
-from validate_binary_model import ValidateBinaryModel
-from validate_multiple_models import ValidateMultipleModels
+from ml_pid_cbm.binary.validate_binary_model import ValidateBinaryModel
+from ml_pid_cbm.validate_multiple_models import ValidateMultipleModels
 
 
 class ValidateMultipleBinaryModels(ValidateMultipleModels, ValidateBinaryModel):

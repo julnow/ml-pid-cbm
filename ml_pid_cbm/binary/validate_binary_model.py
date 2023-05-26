@@ -4,15 +4,15 @@ import sys
 from collections import defaultdict
 from typing import List, Tuple
 
-import json_tools
 import numpy as np
 import pandas as pd
-import plotting_tools
 from hipe4ml.model_handler import ModelHandler
-from load_data import LoadData
-from particles_id import ParticlesId as Pid
 from sklearn.metrics import confusion_matrix
-from validate_model import ValidateModel
+
+from ml_pid_cbm.tools import json_tools, plotting_tools
+from ml_pid_cbm.tools.load_data import LoadData
+from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
+from ml_pid_cbm.validate_model import ValidateModel
 
 
 class ValidateBinaryModel(ValidateModel):

@@ -5,14 +5,14 @@ import sys
 from shutil import copy2
 from typing import List
 
-import json_tools
-import plotting_tools
 from hipe4ml.model_handler import ModelHandler
-from particles_id import ParticlesId as Pid
-from load_data import LoadData
-from train_model import TrainModel
-from prepare_model import PrepareModel
 from sklearn.utils.class_weight import compute_sample_weight
+
+from ml_pid_cbm.tools import json_tools, plotting_tools
+from ml_pid_cbm.tools.load_data import LoadData
+from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
+from ml_pid_cbm.tools.prepare_model import PrepareModel
+from ml_pid_cbm.train_model import TrainModel
 
 
 class TrainBinaryModel(TrainModel):

@@ -1,6 +1,9 @@
+"""
+Module with plotting tools
+"""
 import gc
 import itertools
-from typing import List
+from typing import List, Tuple
 
 import fasttreeshap as shap
 import matplotlib as mplt
@@ -16,8 +19,7 @@ from optuna.study import Study
 from optuna.visualization import plot_contour, plot_optimization_history
 from sklearn.utils import resample
 
-from load_data import LoadData
-import json_tools
+from ml_pid_cbm.tools import json_tools
 
 PARAMS = {
     "axes.titlesize": "22",
@@ -39,7 +41,23 @@ def tof_plot(
     x_axis_range: List[int] = [-13, 13],
     y_axis_range: List[str] = [-1, 2],
     save_fig: bool = True,
-):
+) -> None:
+    """
+    Method for creating tof plots.
+
+    Args:
+        df (pd.DataFrame): Dataframe with particles to plot
+        json_file_name (str): Name of the config.json file
+        particles_title (str): Name of the particle type.
+        file_name (str, optional): Filename to be created. Defaults to "tof_plot".
+            Will add the particles_title after the tof_plot_ when saved.
+        x_axis_range (List[int], optional): X-axis range. Defaults to [-13, 13].
+        y_axis_range (List[str], optional): Y-axi range. Defaults to [-1, 2].
+        save_fig (bool, optional): Where the figure should be saved. Defaults to True.
+
+    Returns:
+        None.
+    """
     # load variable names
     charge_var_name = json_tools.load_var_name(json_file_name, "charge")
     momentum_var_name = json_tools.load_var_name(json_file_name, "momentum")
@@ -76,8 +94,19 @@ def var_distributions_plot(
     data_list: List[TreeHandler],
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
-    filename: str = "vars_disitributions"
+    filename: str = "vars_disitributions",
 ):
+    """
+    Plots distributions of given variables using plot_distr from hipe4ml.
+
+    Args:
+        vars_to_draw (list): List of variables to draw.
+        data_list (List[TreeHandler]): List of TreeHandlers with data.
+        leg_labels (List[str], optional): Names of the particles which are given in the list of TreeHandlers.
+            Defaults to ["protons", "kaons", "pions"].
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+        filename (str, optional): Name of the plot to be saved. Defaults to "vars_disitributions".
+    """
     plot_distr(
         data_list,
         vars_to_draw,
@@ -102,6 +131,16 @@ def correlations_plot(
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
+    """
+    Creates correlation plots
+
+    Args:
+        vars_to_draw (list): Variables to check correlations.
+        data_list (List[TreeHandler]): List of TreeHandlers with data.
+        leg_labels (List[str], optional): Names of the particles which are given in the list of TreeHandlers.
+            Defaults to ["protons", "kaons", "pions"].
+        save_fig (bool, optional):  Whether should save the plot. Defaults to True.
+    """
     plt.subplots_adjust(
         left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55
     )
@@ -116,6 +155,13 @@ def correlations_plot(
 
 
 def opt_history_plot(study: Study, save_fig: bool = True):
+    """
+    Saves optimization history.
+
+    Args:
+        study (Study): optuna.Study to be saved
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
     # for saving python-kaleido package is needed
     fig = plot_optimization_history(study)
     if save_fig:
@@ -127,6 +173,13 @@ def opt_history_plot(study: Study, save_fig: bool = True):
 
 
 def opt_contour_plot(study: Study, save_fig: bool = True):
+    """
+    Saves optimization contour plot
+
+    Args:
+        study (Study): optuna.Study to be saved
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
     fig = plot_contour(study)
     if save_fig:
         fig.write_image("optimization_contour.png")
@@ -141,8 +194,18 @@ def output_train_test_plot(
     train_test_data,
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     logscale: bool = False,
-    save_fig: bool = True
+    save_fig: bool = True,
 ):
+    """
+    Output traing plot as in hipe4ml.plot_output_train_test
+
+    Args:
+        model_hdl (ModelHandler): Model handler to be tested
+        train_test_data (_type_): List created by PrepareModel.prepare_train_test_data
+        leg_labels (List[str], optional): Names of the classified particles. Defaults to ["protons", "kaons", "pions"].
+        logscale (bool, optional): Whether should use logscale. Defaults to False.
+        save_fig (bool, optional): Whether should save the plots. Defaults to True.
+    """
     ml_out_fig = plot_output_train_test(
         model_hdl,
         train_test_data,
@@ -150,7 +213,7 @@ def output_train_test_plot(
         False,
         leg_labels,
         logscale=logscale,
-        density=False, #if true histograms are normalized
+        density=False,  # if true histograms are normalized
     )
     if len(leg_labels) > 1:
         for idx, fig in enumerate(ml_out_fig):
@@ -161,8 +224,8 @@ def output_train_test_plot(
                 fig.show()
     else:
         if save_fig:
-                ml_out_fig.savefig(f"output_train_test_plot.png")
-                ml_out_fig.savefig(f"output_train_test_plot.pdf")
+            ml_out_fig.savefig(f"output_train_test_plot.png")
+            ml_out_fig.savefig(f"output_train_test_plot.pdf")
         else:
             ml_out_fig.show()
     plt.close()
@@ -170,10 +233,19 @@ def output_train_test_plot(
 
 def roc_plot(
     test_df: pd.DataFrame,
-    test_labels_array,
+    test_labels_array: np.ndarray,
     leg_labels: List[str] = ["protons", "kaons", "pions"],
     save_fig: bool = True,
 ):
+    """
+    Roc plot of the model
+
+    Args:
+        test_df (pd.DataFrame): Dataframe containg test_dataset with particles.
+        test_labels_array (np.ndarray): Ndarray containig labels of the test_df.
+        leg_labels (List[str], optional): Names of the classified particles. Defaults to ["protons", "kaons", "pions"].
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
     plot_roc(test_df, test_labels_array, None, leg_labels, multi_class_opt="ovo")
     if save_fig:
         plt.savefig("roc_plot.png")
@@ -185,12 +257,24 @@ def roc_plot(
 
 def plot_confusion_matrix(
     cnf_matrix: np.ndarray,
-    classes=["proton", "kaon", "pion", "bckgr"],
-    normalize=False,
-    title="Confusion matrix",
+    classes: List[str] = ["proton", "kaon", "pion", "bckgr"],
+    normalize: bool = False,
+    title: str = "Confusion matrix",
     cmap=mplt.colormaps["Blues"],
     save_fig: bool = True,
 ):
+    """
+    Plot created earlier confusion matrix.
+
+    Args:
+        cnf_matrix (np.ndarray): Confusion matrix
+        classes (List[str], optional): List of the names of the classes.
+            Defaults to ["proton", "kaon", "pion", "bckgr"].
+        normalize (bool, optional): Whether should normalize the plot. Defaults to False.
+        title (str, optional): Title of the plot. Defaults to "Confusion matrix".
+        cmap (_type_, optional): Cmap used for colors. Defaults to mplt.colormaps["Blues"].
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
     filename = "confusion_matrix"
     if normalize:
         cnf_matrix = cnf_matrix.astype("float") / cnf_matrix.sum(axis=1)[:, np.newaxis]
@@ -214,7 +298,9 @@ def plot_confusion_matrix(
 
     fmt = ".2f" if normalize else "d"
     thresh = cnf_matrix.max() / 2.0
-    for i, j in itertools.product(range(cnf_matrix.shape[0]), range(cnf_matrix.shape[1])):
+    for i, j in itertools.product(
+        range(cnf_matrix.shape[0]), range(cnf_matrix.shape[1])
+    ):
         plt.text(
             j,
             i,
@@ -238,10 +324,21 @@ def plot_mass2(
     xgb_mass: pd.Series,
     sim_mass: pd.Series,
     particles_title: str,
-    range1,
+    range1: Tuple[float, float],
     y_axis_log: bool = False,
     save_fig: bool = True,
 ):
+    """
+    Plots mass^2
+
+    Args:
+        xgb_mass (pd.Series): pd.Series containg xgb_selected mass^2
+        sim_mass (pd.Series): pd.Series containg MC-true mass^2
+        particles_title (str): Name of the plot.
+        range1 (tuple[float, float]): Range of the mass2 to be plotted on x-axis.
+        y_axis_log (bool, optional): If should use logscale in y-scale. Defaults to False.
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
     # fig, axs = plt.subplots(2, 1,figsize=(15,10), sharex=True,  gridspec_kw={'width_ratios': [10],
     #                            'height_ratios': [8,4]})
     fig, axs = plt.subplots(figsize=(15, 10), dpi=300)
@@ -283,10 +380,22 @@ def plot_all_particles_mass2(
     mass2_variable_name: str,
     pid_variable_name: str,
     particles_title: str,
-    range1,
+    range1: Tuple[float, float],
     y_axis_log: bool = False,
     save_fig: bool = True,
 ):
+    """
+    Plots mc-true particle type in xgb_selected particles
+
+    Args:
+        xgb_selected (pd.Series): pd.Series with xgb-selected particles.
+        mass2_variable_name (str): Name of the mass2 variable name.
+        pid_variable_name (str): Name of the pid variable name.
+        particles_title (str): Name of the plot.
+        range1 (tuple[float, float]): Range of the x-axis.
+        y_axis_log (bool, optional): If should use logscale in y-scale. Defaults to False.
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
     # fig, axs = plt.subplots(2, 1,figsize=(15,10), sharex=True,  gridspec_kw={'width_ratios': [10],
     #                            'height_ratios': [8,4]})
     fig, axs = plt.subplots(figsize=(15, 10), dpi=300)
@@ -346,11 +455,10 @@ def plot_eff_pT_rap(
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
     pT_var_name: str = "Complex_pT",
-    ranges=[[0, 5], [0, 3]],
-    nbins=50,
+    ranges: Tuple[Tuple[float, float], Tuple[float, float]] = [[0, 5], [0, 3]],
+    nbins: int = 50,
     save_fig: bool = True,
-    particle_names: List[str] = ["protons", "kaons", "pions", "bckgr"]
-
+    particle_names: List[str] = ["protons", "kaons", "pions", "bckgr"],
 ):
     df_true = df[(df[pid_var_name] == pid)]  # simulated
     df_reco = df[(df["xgb_preds"] == pid)]  # reconstructed by xgboost
@@ -397,11 +505,27 @@ def plot_pt_rapidity(
     pid_var_name: str = "Complex_pid",
     rapidity_var_name: str = "Complex_rapidity",
     pT_var_name: str = "Complex_pT",
-    ranges=[[0, 5], [0, 3]],
+    ranges: Tuple[Tuple[float, float], Tuple[float, float]] = [[0, 5], [0, 3]],
     nbins=50,
     save_fig: bool = True,
-    particle_names: List[str] = ["protons", "kaons", "pions", "bckgr"]
+    particle_names: List[str] = ["protons", "kaons", "pions", "bckgr"],
 ):
+    """
+    Plots pt-rapidity 2D histogram.
+
+    Args:
+        df (pd.DataFrame): Dataframe with input data.
+        pid (int): Pid of the variable to be plotted.
+        pid_var_name (str, optional): Name of the pid variable. Defaults to "Complex_pid".
+        rapidity_var_name (str, optional): Name of the rapidity variable. Defaults to "Complex_rapidity".
+        pT_var_name (str, optional): Name of the pT variable. Defaults to "Complex_pT".
+        ranges (Tuple[Tuple[float, float], Tuple[float, float]], optional):
+            Ranges of the plot. Defaults to [[0, 5], [0, 3]].
+        nbins (int, optional): Number of bins in each axis. Defaults to 50.
+        save_fig (bool, optional): Whether should save the figute. Defaults to True.
+        particle_names (List[str], optional): Names of the particles corresponding to pid.
+            Defaults to ["protons", "kaons", "pions", "bckgr"].
+    """
     df_true = df[(df[pid_var_name] == pid)]  # simulated
 
     x = np.array(df_true[rapidity_var_name])
@@ -434,6 +558,118 @@ def plot_pt_rapidity(
         plt.show()
 
 
+def _shap_summary(
+    shap_values,
+    x_train_resampled: pd.DataFrame,
+    features_names: List[str],
+    particle_name: str,
+    save_fig: bool = True,
+):
+    """
+    Internal method for plotting summary shap plots.
+
+    Args:
+        shap_values (_type_): Shap values.
+        x_train_resampled (pd.DataFrame): Dataframe with X training variables.
+        features_names (List[str]): List of the training variables.
+        particle_name (str): Name of the particle.
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+    shap.summary_plot(
+        shap_values,
+        x_train_resampled,
+        feature_names=features_names,
+        show=False,
+    )
+    w, h = plt.gcf().get_size_inches()
+    plt.gcf().set_size_inches(h + 2, h)
+    plt.gcf().set_size_inches(w, w * 3 / 4)
+    plt.gcf().axes[-1].set_aspect("auto")
+    plt.gcf().axes[-1].set_box_aspect(50)
+    plt.xlabel(f"SHAP values for  {particle_name}", fontsize=18)
+    ax.spines["top"].set_visible(True)
+    ax.spines["right"].set_visible(True)
+    ax.spines["bottom"].set_visible(True)
+    ax.spines["left"].set_visible(True)
+    ax.tick_params(
+        axis="both",
+        which="major",
+        length=10,
+        direction="in",
+        labelsize=15,
+        zorder=4,
+    )
+    ax.minorticks_on()
+    ax.tick_params(
+        axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
+    )
+    fig.tight_layout()
+    if save_fig:
+        plt.savefig(f"shap_summary_{particle_name}.png")
+        plt.savefig(f"shap_summary_{particle_name}.pdf")
+        plt.close()
+    else:
+        plt.show()
+
+
+def _shap_interaction(
+    shap_values,
+    x_train_resampled,
+    features_names,
+    particle_name: str,
+    save_fig: bool = True,
+):
+    """
+    Internal method for plotting shap interaction plots.
+
+    Args:
+        shap_values (_type_): Shap values.
+        x_train_resampled (pd.DataFrame): Dataframe with X training variables.
+        features_names (List[str]): List of the training variables.
+        particle_name (str): Name of the particle.
+        save_fig (bool, optional): Whether should save the plot. Defaults to True.
+    """
+    for feature in features_names:
+        fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
+        shap.dependence_plot(
+            feature,
+            shap_values,
+            x_train_resampled,
+            display_features=x_train_resampled,
+            show=False,
+        )
+        w, h = plt.gcf().get_size_inches()
+        plt.gcf().set_size_inches(h + 2, h)
+        plt.gcf().set_size_inches(w, w * 3 / 4)
+        plt.gcf().axes[-1].set_aspect("auto")
+        plt.gcf().axes[-1].set_box_aspect(50)
+        plt.xlabel(f"{feature} for {particle_name}", fontsize=18)
+        ax.spines["top"].set_visible(True)
+        ax.spines["right"].set_visible(True)
+        ax.spines["bottom"].set_visible(True)
+        ax.spines["left"].set_visible(True)
+        ax.tick_params(
+            axis="both",
+            which="major",
+            length=10,
+            direction="in",
+            labelsize=15,
+            zorder=4,
+        )
+        ax.minorticks_on()
+        ax.tick_params(
+            axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
+        )
+        fig.tight_layout()
+        if save_fig:
+            plt.savefig(f"shap_{feature}_{particle_name}.png")
+            plt.savefig(f"shap_{feature}_{particle_name}.pdf")
+            plt.close()
+        else:
+            plt.show()
+
+
 def plot_shap_summary(
     x_train: pd.DataFrame,
     y_train: pd.DataFrame,
@@ -443,7 +679,24 @@ def plot_shap_summary(
     save_fig: bool = True,
     approximate: bool = False,
     n_samples: int = 50000,
+    particle_names: List[str] = ["protons", "kaons", "pions"],
 ):
+    """
+    Method for plotting shap plots
+
+    Args:
+        x_train (pd.DataFrame): pd.Dataframe with X training dataset.
+        y_train (pd.DataFrame): X training dataset labels.
+        model_hdl (ModelHandler): Model Handler to be explained.
+        features_names (List[str]): List of the training variables.
+        n_workers (int, optional): Number of thread for multithreading.
+            Note: it uses fastreeshap library, not shap. Defaults to 1.
+        save_fig (bool, optional): Whether should save the plots.. Defaults to True.
+        approximate (bool, optional): Whether should the approximate values. Defaults to False.
+        n_samples (int, optional): Maximal number of samples in each class. Defaults to 50000.
+        particle_names (List[str], optional): List of the classified particle names.
+            Defaults to ["protons", "kaons", "pions"].
+    """
     print("Creating shap plots...")
     explainer = shap.TreeExplainer(
         model_hdl.get_original_model(), n_jobs=n_workers, approximate=approximate
@@ -470,44 +723,65 @@ def plot_shap_summary(
     )
     num_classes = len(shap_values)  # get the number of classes
     for i in range(num_classes):
-        fig, ax = plt.subplots(figsize=(8, 6), dpi=300)
-        shap.summary_plot(
+        _shap_summary(
             shap_values[i],
             x_train_resampled,
-            feature_names=features_names,
-            show=False,
+            features_names,
+            particle_names[i],
+            save_fig=save_fig,
         )
-        w, h = plt.gcf().get_size_inches()
-        plt.gcf().set_size_inches(h + 2, h)
-        plt.gcf().set_size_inches(w, w * 3 / 4)
-        plt.gcf().axes[-1].set_aspect("auto")
-        plt.gcf().axes[-1].set_box_aspect(50)
-        plt.xlabel(f"SHAP values for class {i}", fontsize=18)
-        ax.spines["top"].set_visible(True)
-        ax.spines["right"].set_visible(True)
-        ax.spines["bottom"].set_visible(True)
-        ax.spines["left"].set_visible(True)
-        ax.tick_params(
-            axis="both",
-            which="major",
-            length=10,
-            direction="in",
-            labelsize=15,
-            zorder=4,
+        _shap_interaction(
+            shap_values[i],
+            x_train_resampled,
+            features_names,
+            particle_names[i],
+            save_fig=save_fig,
         )
-        ax.minorticks_on()
-        ax.tick_params(
-            axis="both", which="minor", length=5, direction="in", labelsize=15, zorder=5
-        )
-        fig.tight_layout()
+
+
+def plot_efficiency_purity(
+    probas: np.ndarray,
+    efficiencies: List[List[float]],
+    purities: List[List[float]],
+    save_fig: bool = True,
+    particle_names: List[str] = ["protons", "kaons", "pions"],
+):
+    """
+    Plots efficiency and purity in function of probability cuts.
+
+    Args:
+        probas (np.ndarray): Probability cuts
+        efficiencies (List[List[float]]): List of list of efficiencies for each clas.
+        purities (List[List[float]]): List of list of purities for each clas.
+        save_fig (bool, optional): Whether should save the fig. Defaults to True.
+        particle_names (List[str], optional): List of the particle names. Defaults to ["protons", "kaons", "pions"].
+    """
+    for i, (eff, pur) in enumerate(zip(efficiencies, purities)):
         if save_fig:
-            plt.savefig(f"shap_summary_{i}.png")
-            plt.savefig(f"shap_summary_{i}.pdf")
+            dpi = 300
+        else:
+            dpi = 100
+        fig, ax = plt.subplots(figsize=(10, 7), dpi=dpi)
+        ax.plot(probas, eff, label="efficiency")
+        ax.plot(probas, pur, label="purity")
+        ax.set_xlabel("BDT cut")
+        ax.set_ylabel("\% ")
+        ax.legend(loc="upper right")
+        ax.set_title(
+            f"Efficiency and purity in function of BDT cut for {particle_names[i]}"
+        )
+        ax.grid(which="major", linestyle="-")
+        ax.minorticks_on()
+        ax.grid(which="minor", linestyle="--")
+        if save_fig:
+            fig.savefig(f"efficiency_purity__{particle_names[i]}.png")
+            fig.savefig(f"efficiency_purity_id_{particle_names[i]}.pdf")
             plt.close()
         else:
             plt.show()
 
 
+# deprecated
 def plot_before_after_variables(
     df: pd.DataFrame,
     pid: float,
@@ -516,6 +790,21 @@ def plot_before_after_variables(
     save_fig: bool = True,
     log_yscale: bool = True,
 ):
+    """
+    Plots each variable before and after selection.
+    Legacy: var_distributions_plot should rather be used.
+
+    Args:
+        df (pd.DataFrame): _description_
+        pid (float): _description_
+        pid_variable_name (str): _description_
+        training_variables (List[str]): _description_
+        save_fig (bool, optional): _description_. Defaults to True.
+        log_yscale (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        _type_: _description_
+    """
     df_true = df[(df[pid_variable_name] == pid)]  # simulated
     df_reco = df[(df["xgb_preds"] == pid)]  # reconstructed by xgboost
 
@@ -554,7 +843,9 @@ def plot_before_after_variables(
         if log_yscale:
             ax.set_yscale("log")
         ax.legend((leg1, leg2), fontsize=15, loc="upper right")
-        ax.set_title(f"{variable_name} before and after XGB selection for pid={pid}", fontsize=15)
+        ax.set_title(
+            f"{variable_name} before and after XGB selection for pid={pid}", fontsize=15
+        )
         return fig
 
     for training_variable in training_variables:
@@ -566,33 +857,3 @@ def plot_before_after_variables(
 
         else:
             plot.show()
-
-
-def plot_efficiency_purity(
-    probas: np.ndarray,
-    efficiencies: List[List[float]],
-    purities: List[List[float]],
-    save_fig: bool = True,
-    particle_names: List[str] = ["protons", "kaons", "pions"]
-):
-    for i, (eff, pur) in enumerate(zip(efficiencies, purities)):
-        if save_fig:
-            dpi = 300
-        else:
-            dpi = 100
-        fig, ax = plt.subplots(figsize=(10, 7), dpi=dpi)
-        ax.plot(probas, eff, label="efficiency")
-        ax.plot(probas, pur, label="purity")
-        ax.set_xlabel("BDT cut")
-        ax.set_ylabel("\% ")
-        ax.legend(loc="upper right")
-        ax.set_title(f"Efficiency and purity in function of BDT cut for {particle_names[i]}")
-        ax.grid(which="major", linestyle="-")
-        ax.minorticks_on()
-        ax.grid(which="minor", linestyle="--")
-        if save_fig:
-            fig.savefig(f"efficiency_purity__{particle_names[i]}.png")
-            fig.savefig(f"efficiency_purity_id_{particle_names[i]}.pdf")
-            plt.close()
-        else:
-            plt.show()
