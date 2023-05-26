@@ -21,7 +21,7 @@ To run this project, you need to set up a Conda environment with the required pa
    git clone https://github.com/julnow/ml-pid-cbm.git
    cd ml-pid-cbm
    ```
-2. Install necessary packages described in the [enivornment.yml](../blob/main/environment.yml) file to your conda environment, for example:
+2. Install necessary packages described in the [enivornment.yml](../main/environment.yml) file to your conda environment, for example:
     ```bash
     conda env update --file environment.yml --name enivornment_name
     ```
@@ -35,7 +35,7 @@ To run this project, you need to set up a Conda environment with the required pa
 This package constsits of three main modules.
 
 ### 0. config.json
-However, you should first  fill all the necessary fields in the [config.json](../blob/main/ml_pid_cbm/config.json)
+However, you should first  fill all the necessary fields in the [config.json](../main/ml_pid_cbm/config.json)
 The root trees can be e.g., created using [ml-tree-plainer package](https://github.com/julnow/ml-tree-plainer).
 
 ```json
@@ -125,7 +125,7 @@ where:
 ### 4. Bash files
 For better automation, a bash file can be created for all the steps.
 
-For example, in the [bash_training](../blob/main/ml_pid_cbm/bash_train.sh) we can define:
+For example, in the [bash_training](../main/ml_pid_cbm/bash/bash_train.sh) we can define:
 
 ```bash
 #!/bin/bash
@@ -134,11 +134,11 @@ eval "$(conda shell.bash hook)"
 conda activate env
 
 CONFIG="config.json"
-python -u ../../train_model.py -c $CONFIG -p 0 1.6 --saveplots --nworkers 16 --usevalidation  | tee train_bin_0.txt
-python -u ../../train_model.py -c $CONFIG -p 1.6 2.3 --saveplots --nworkers 16 --usevalidation  | tee train_bin_1.txt
+python -u ../../train_model.py -c $CONFIG -p 0 1.6 --saveplots --nworkers 8 --usevalidation  | tee train_bin_0.txt
+python -u ../../train_model.py -c $CONFIG -p 1.6 2.3 --saveplots --nworkers 8 --usevalidation  | tee train_bin_1.txt
 
 ```
-Later, in the [bash_validate](../blob/main/ml_pid_cbm/bash_validate.sh):
+Later, in the [bash_validate](../main/ml_pid_cbm/bash/bash_validate.sh):
 
 ```bash
 #!/bin/bash
@@ -153,7 +153,7 @@ for dir in model_*
     do
         if [[ -d "$dir" ]]; then
             readymodels+="$dir "
-            python ../../validate_model.py -c $CONFIG -m $dir -n 4 -e .4 .95 40 
+            python ../../validate_model.py -c $CONFIG -m $dir -n 8 -e .4 .95 40 -a 90
        fi
 done
 python ../../validate_multiple_models.py -c $CONFIG -m $readymodels --nworkers 4

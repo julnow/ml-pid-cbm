@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - main
+    paths-ignore:
+      - '**/README.md'
   pull_request:
     branches:
     - main
@@ -42,6 +44,7 @@ jobs:
         eval "$(conda shell.bash hook)"
         conda activate main
         conda install pytest coverage
+        cd ml_pid_cbm
         coverage run -m pytest
         coverage xml
     - name: Upload coverage reports to Codecov
