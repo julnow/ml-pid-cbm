@@ -6,8 +6,8 @@ from unittest.mock import mock_open, patch
 
 import pandas as pd
 
-from tools.particles_id import ParticlesId as Pid
-from validate_model import ValidateModel
+from .tools.particles_id import ParticlesId as Pid
+from .validate_model import ValidateModel
 
 
 class TestValidateModel(unittest.TestCase):
