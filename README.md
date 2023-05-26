@@ -35,7 +35,7 @@ To run this project, you need to set up a Conda environment with the required pa
 This package constsits of three main modules.
 
 ### 0. config.json
-However, you should first  fill all the necessary fields in the [config.json](../ml_pid_cbm/config.json)
+However, you should first  fill all the necessary fields in the [config.json](../main/ml_pid_cbm/config.json)
 The root trees can be e.g., created using [ml-tree-plainer package](https://github.com/julnow/ml-tree-plainer).
 
 ```json
@@ -125,7 +125,7 @@ where:
 ### 4. Bash files
 For better automation, a bash file can be created for all the steps.
 
-For example, in the [bash_training](../ml_pid_cbm/bash/bash_train.sh) we can define:
+For example, in the [bash_training](../main/ml_pid_cbm/bash/bash_train.sh) we can define:
 
 ```bash
 #!/bin/bash
@@ -138,7 +138,7 @@ python -u ../../train_model.py -c $CONFIG -p 0 1.6 --saveplots --nworkers 16 --u
 python -u ../../train_model.py -c $CONFIG -p 1.6 2.3 --saveplots --nworkers 16 --usevalidation  | tee train_bin_1.txt
 
 ```
-Later, in the [bash_validate](../ml_pid_cbm/bash/bash_validate.sh):
+Later, in the [bash_validate](../main/ml_pid_cbm/bash/bash_validate.sh):
 
 ```bash
 #!/bin/bash
