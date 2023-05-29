@@ -73,11 +73,11 @@ usage: ML_PID_CBM TrainModel [-h] --config CONFIG --momentum MOMENTUM MOMENTUM
                              [--printplots | --saveplots] [--usevalidation]
 ```
 where:
-* `--config` should be the location of the config file
-* `--momentum` describe lower and upper momentum cut
-* `--antiparticles` flag sets used only  negative charge, otherwise positive
+* `--config` should be the location of the config file, e.g., `-c config.json`
+* `--momentum` describe lower and upper momentum cut, e.g., `-m 0 3`
+* `--antiparticles` flag sets used only  egative charge, otherwise positive
 * `--gpu` turns on GPU-usage for training
-* `--nworkers` sets number of threads available for the _ThreadPoolExecutor_
+* `--nworkers` sets number of threads available for the _ThreadPoolExecutor_, e.g., `-n 8`
 * `--printplots` shows the plots interactively, while the `--saveplots` saves them in png and pdf format
 * `--usevalidation` uses validation dataset for creating the model output graphs, useful to check during the training if the model performs similarily on the training validation (e.g., created using DCM simulation model) and validation (e.g., creating using URQMD)
 
@@ -93,15 +93,15 @@ usage: ML_PID_CBM ValidateModel [-h] --config CONFIG --modelname MODELNAME
                                 [--interactive | --automatic AUTOMATIC]
 ```
 where:
-* `--config` should be the location of the config file
-* `--modelname` is the name of the folder created during the trainig step containg the model (which will have the same name).
-* `--nworkers` sets number of threads available for the _ThreadPoolExecutor_
+* `--config` should be the location of the config file, e.g., `-c config.json`
+* `--modelname` is the name of the folder created during the trainig step containg the model (which will have the same name), e.g., `-m model_0_1_positive`
+* `--nworkers` sets number of threads available for the _ThreadPoolExecutor_, e.g., `-n 8`
 * Probabilitycuts:
-  * `--probabilitycuts` can be set manually, for respectively PROTONS, KAONS, PIONS in the current implementation, e.g., .9 .8 .9
-  * `--evaluateproba` will check probability cuts for each particle from LOWER_VALUE to UPPER_VALUE using N_STEPS, e.g., .35 .98 40
+  * `--probabilitycuts` can be set manually, for respectively PROTONS, KAONS, PIONS in the current implementation, e.g., `-p .9 .8 .9`
+  * `--evaluateproba` will check probability cuts for each particle from LOWER_VALUE to UPPER_VALUE using N_STEPS, e.g., `-e .35 .98 40`
 * If probabilitycuts where set using `--evaluateproba`, user have to options:
     * Select them interactively if `--interactive` provided
-    * Apply automatic selection, aiming for MINIMAL_PURITY %, e.g., 90
+    * Apply automatic selection using `--automatic`, aiming for MINIMAL_PURITY %, e.g., `-a 90`
 
 #### The automatic probabilitycut selection alghoritm:
   1. Chooses the probability cut with the highest efficiency, if the purity is higher than MINIMAL_PURITY
@@ -117,8 +117,8 @@ usage: ML_PID_CBM ValidateMultipleModels [-h] --modelnames MODELNAMES
                                          [--nworkers NWORKERS]
 ```
 where:
-* `--config` should be the location of the config file
-* `--nworkers` sets number of threads available for the _ThreadPoolExecutor_
+* `--config` should be the location of the config file, e.g., `-c config.json`
+* `--nworkers` sets number of threads available for the _ThreadPoolExecutor_, e.g., `-n 8`
 * `--modelnames` should be a list of all validated models whose results should be merged, e.g., `-m modelA modelB modelC`
 
 
