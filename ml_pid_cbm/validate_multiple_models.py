@@ -7,7 +7,7 @@ from typing import List, Set
 
 import pandas as pd
 
-from .validate_model import ValidateModel
+from validate_model import ValidateModel
 
 
 class ValidateMultipleModels(ValidateModel):

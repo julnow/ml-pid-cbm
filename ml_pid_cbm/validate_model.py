@@ -11,9 +11,9 @@ import pandas as pd
 from hipe4ml.model_handler import ModelHandler
 from sklearn.metrics import confusion_matrix
 
-from .tools import json_tools, plotting_tools
-from .tools.load_data import LoadData
-from .tools.particles_id import ParticlesId as Pid
+from tools import json_tools, plotting_tools
+from tools.load_data import LoadData
+from tools.particles_id import ParticlesId as Pid
 
 
 class ValidateModel:
