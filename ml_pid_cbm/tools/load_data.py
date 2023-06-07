@@ -26,6 +26,26 @@ class LoadData:
         upper_p_cut: float,
         anti_particles: bool,
     ):
+        """
+        Initializes the LoadDataObject
+
+        Parameters
+        ----------
+        data_file_name : str
+             Name of the data file in .tree format.
+
+        json_file_name : str
+             Name of the JSON file containing variable names and cuts definitions.
+
+        lower_p_cut : float
+            Value of the lower momentum cut.
+
+        upper_p_cut : float
+            Value of the upper momentum cut.
+
+        anti_particles : bool
+            Specifies whether to load only antiparticles (True) or positive particles (False).
+        """
         self.data_file_name = data_file_name
         self.lower_p_cut = lower_p_cut
         self.upper_p_cut = upper_p_cut
@@ -42,24 +62,46 @@ class LoadData:
         nsigma_pion: float = None,
         json_file_name: str = None,
     ) -> Tuple[TreeHandler, TreeHandler, TreeHandler]:
-        """Gets protons, kaons, and pions from TreeHandler in  nsigma region.
-        In this tof model, pions, muons and electrons are treated the same
+        """
+        Gets protons, kaons, and pions from a TreeHandler in the nsigma region.
 
-        Args:
-            tree_handler (TreeHandler): TreeHandler containg data.
-            nsigma (float, optional): Number of sigma for data cleaning. Defaults to 3.
-            anti_particles (bool, optional): Loads only antiparticles if set to True, positive particle if set to False. Defaults to None.
-            nsigma_proton (float, optional): Number of sigma for protons, if not specified uses nsigma. Defaults to None.
-            nsigma_kaon (float, optional): Number of sigma for kaons, if not specified uses nsigma. Defaults to None.
-            nsigma_pion (float, optional): Number of sigma for pions, if not specified uses nsigma. Defaults to None.
-            json_file_name (str, optional): Name of the json file contaning variable names. Defaults to None.
+        In this tof model, pions, muons, and electrons are treated the same.
 
-        Returns:
-            Tuple[TreeHandler, TreeHandler, TreeHandler]: _description_
+        Parameters
+        ----------
+        tree_handler : TreeHandler
+            TreeHandler containing the data.
+
+        nsigma : float, optional
+            Number of sigma for data cleaning, by default 5.
+
+        anti_particles : bool, optional
+            Loads only antiparticles if set to True, positive particles if set to False.
+            Defaults to None.
+
+        nsigma_proton : float, optional
+            Number of sigma for protons, if not specified uses nsigma.
+            Defaults to None.
+
+        nsigma_kaon : float, optional
+            Number of sigma for kaons, if not specified uses nsigma.
+            Defaults to None.
+
+        nsigma_pion : float, optional
+            Number of sigma for pions, if not specified uses nsigma.
+            Defaults to None.
+
+        json_file_name : str, optional
+            Name of the JSON file containing variable names, by default None.
+
+        Returns
+        -------
+        Tuple[TreeHandler, TreeHandler, TreeHandler]
+            Tuple containing TreeHandlers for protons, kaons, and pions.
         """
         anti_particles = anti_particles or self.anti_particles
         nsigma_proton = nsigma_proton if nsigma_proton is not None else nsigma
-        nsigma_kaon = nsigma_kaon if nsigma_kaon is not None else  nsigma
+        nsigma_kaon = nsigma_kaon if nsigma_kaon is not None else nsigma
         nsigma_pion = nsigma_pion if nsigma_pion is not None else nsigma
         json_file_name = json_file_name or self.json_file_name
 
@@ -102,16 +144,20 @@ class LoadData:
         nsigma: float = 0.0,
         json_file_name: str = None,
     ) -> TreeHandler:
-        """Gets particle of given pid in selected sigma region of mass2
+        """
+        Gets particles of a given pid in the selected sigma region of mass2.
 
-        Args:
-            tree_handler (TreeHandler): TreeHandler with the data
-            pid (float): Pid of given particle type
-            nsigma (float, optional): Number of sigma to select sigma region of mass2. Defaults to 0.
-            json_file_name (str, optional): Name of the json file contaning variable names. Defaults to None.
+        Parameters:
+            tree_handler (TreeHandler): TreeHandler with the data.
+
+            pid (float): Pid of the given particle type.
+
+            nsigma (float, optional): Number of sigma to select the sigma region of mass2. Defaults to 0.
+
+            json_file_name (str, optional): Name of the JSON file containing variable names. Defaults to None.
 
         Returns:
-            TreeHandler: TreeHandler with given particles type in given sigma region
+            TreeHandler: TreeHandler with the particles of the given type in the specified sigma region.
         """
         json_file_name = json_file_name or self.json_file_name
         pid_var_name = json_tools.load_var_name(json_file_name, "pid")
@@ -128,9 +174,9 @@ class LoadData:
                     mean - nsigma * std, mean + nsigma * std, mass2_var_name
                 )
                 particles = particles.get_subset(mass2_cut)
+
         return particles
 
-    # load file with data into hipe4ml TreeHandler
     def load_tree(
         self,
         data_file_name: str = None,
@@ -138,20 +184,22 @@ class LoadData:
         max_workers: int = 1,
         model_handler: ModelHandler = None,
     ) -> TreeHandler:
-        """Loads tree from given file into hipe4ml TreeHandler
+        """
+        Loads tree from given file into hipe4ml TreeHandler.
 
-        Args:
+        Parameters:
             data_file_name (str, optional): Name of the file with the tree. Defaults to None.
-            tree_type (str, optional): Type of the tree structure to be loaded.
-            Defaults to "plain_tree".
-            max_workers (int, optional): Number of max_workers for ThreadPoolExecutor used to load data with multithreading.\
-            Defaults to 1.
-            model_handler(ModelHandler, optional): ModelHandler to apply if the dataset is validation one. Default to None.
+
+            tree_type (str, optional): Type of the tree structure to be loaded. Defaults to "plain_tree".
+
+            max_workers (int, optional): Number of max_workers for ThreadPoolExecutor used to load data with multithreading.
+                Defaults to 1.
+                
+            model_handler (ModelHandler, optional): ModelHandler to apply if the dataset is validation one. Defaults to None.
 
         Returns:
-            TreeHandler: hipe4ml structure contatining tree to train and test model on
+            TreeHandler: hipe4ml structure containing the tree to train and test the model on.
         """
-
         data_file_name = data_file_name or self.data_file_name
         tree_handler = TreeHandler()
         preselection = self.clean_tree()
@@ -168,14 +216,14 @@ class LoadData:
 
     def clean_tree(self, json_file_name: str = None) -> str:
         """
-        Creates string with preselections (quality cuts, momentum range and sign of charge)
+        Creates a string with preselections (quality cuts, momentum range, and sign of charge).
 
-        Args:
-            json_file_name (str, optional): Name of the json file containg
-            quality cuts definition (if different than in class). Defaults to None.
+        Parameters:
+            json_file_name (str, optional): Name of the JSON file containing quality cuts definition
+                (if different than in the class). Defaults to None.
 
         Returns:
-            TreeHandler: _description_
+            str: Preselection string for the the TreeHandler object.
         """
         preselection = ""
         json_file_name = json_file_name or self.json_file_name
