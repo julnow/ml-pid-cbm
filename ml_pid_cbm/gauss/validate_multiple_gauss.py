@@ -2,19 +2,18 @@ import argparse
 import os
 import sys
 from shutil import copy2
-from typing import List, Set
+from typing import List
 
-import pandas as pd
-
-from validate_gauss import ValidateGauss
-from validate_multiple_models import ValidateMultipleModels
+from ml_pid_cbm.gauss.validate_gauss import ValidateGauss
+from ml_pid_cbm.validate_multiple_models import ValidateMultipleModels
 
 
-class ValidateMultipleGauss(ValidateGauss, ValidateMultipleModels):
+class ValidateMultipleGauss(ValidateMultipleModels, ValidateGauss):
     """
     Class for validating data from multiple models.
     Inherits from ValidateModel
     """
+
 
 def parse_args(args: List[str]) -> argparse.Namespace:
     """

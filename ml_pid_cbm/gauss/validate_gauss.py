@@ -6,12 +6,12 @@ from shutil import copy2
 from typing import List, Tuple
 
 import numpy as np
-
 from sklearn.metrics import confusion_matrix
-from tools import json_tools, plotting_tools
-from tools.load_data import LoadData
-from tools.particles_id import ParticlesId as Pid
-from validate_model import ValidateModel
+
+from ml_pid_cbm.tools import json_tools, plotting_tools
+from ml_pid_cbm.tools.load_data import LoadData
+from ml_pid_cbm.tools.particles_id import ParticlesId as Pid
+from ml_pid_cbm.validate_model import ValidateModel
 
 
 class ValidateGauss(ValidateModel):
