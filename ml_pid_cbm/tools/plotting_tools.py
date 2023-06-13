@@ -146,13 +146,21 @@ def correlations_plot(
         left=0.06, bottom=0.06, right=0.99, top=0.96, hspace=0.55, wspace=0.55
     )
     cor_plots = plot_corr(data_list, vars_to_draw, leg_labels)
-    for i, plot in enumerate(cor_plots):
+    if isinstance(cor_plots, list):
+        for i, plot in enumerate(cor_plots):
+            if save_fig:
+                plot.savefig(f"correlations_plot_{i}.png")
+                plot.savefig(f"correlations_plot_{i}.pdf")
+                plt.close(plot)
+            else:
+                plot.show()
+    else:
         if save_fig:
-            plot.savefig(f"correlations_plot_{i}.png")
-            plot.savefig(f"correlations_plot_{i}.pdf")
-            plt.close()
+                cor_plots.savefig(f"correlations_plot.png")
+                cor_plots.savefig(f"correlations_plot.pdf")
+                plt.close(cor_plots)
         else:
-            plot.show()
+            cor_plots.show()
 
 
 def opt_history_plot(study: Study, save_fig: bool = True):

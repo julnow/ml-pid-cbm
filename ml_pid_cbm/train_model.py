@@ -38,7 +38,9 @@ class TrainModel:
         """
         model_hdl = model_hdl or self.model_hdl
         model_hdl.train_test_model(
-            train_test_data, multi_class_opt="ovo", sample_weight=sample_weights
+            train_test_data,
+            multi_class_opt="ovo",
+            sample_weight=sample_weights,
         )
         self.model_hdl = model_hdl
 
@@ -205,7 +207,7 @@ if __name__ == "__main__":
     # train model
     train = TrainModel(model_hdl, model_name)
     sample_weights = compute_sample_weight(
-        class_weight=None,  # class_weight="balanced" deleted for now
+        class_weight="balanced",  # class_weight=None or {0: 1, 1: 3, 2: 1}, deleted for now
         y=train_test_data[1],
     )
     train.train_model_handler(train_test_data, sample_weights)
